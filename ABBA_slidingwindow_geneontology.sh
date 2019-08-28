@@ -3,7 +3,7 @@
 #shell script to pull list of gene names from chicken gff file
 #requires chicken gff files to be in a folder with the names "chicken_chr1.gff" "chicken_chr2.gff" etc
 #input is a csv file of a list of regions output by Simon Martin's ABBA BABA sliding window scans
-
+#huh
 if [ $# -lt 1 ]
   then
     echo "Generates two PCA plots, one defining points by population and another defining points by individual.
