@@ -41,7 +41,7 @@ if [ $# -lt 1 ]
     [-3b] Path to directory containing gff files"
 
   else
-    while getopts a:b:c:d:1a:1b:1c:2a:3a:3b: option
+    while getopts a:b:c:d:e:f:g:h:i:j: option
     do
     case "${option}"
     in
@@ -49,12 +49,12 @@ if [ $# -lt 1 ]
     b) output_directory=${OPTARG};;
     c) github_directory=${OPTARG};;
     d) simonhmartin_directory=${OPTARG};;
-    1a) path_to_vcf_file=${OPTARG};;
-    1b) path_to_populations_file=${OPTARG};;
-    1c) outgroup=${OPTARG};;
-    2a) proceed_through_stage_2=${OPTARG};;
-    3a) path_to_satsuma_summary_chained_file=${OPTARG};;
-    3b) path_to_directory_containing_gff_files=${OPTARG};;
+    e) path_to_vcf_file=${OPTARG};;
+    f) path_to_populations_file=${OPTARG};;
+    g) outgroup=${OPTARG};;
+    h) proceed_through_stage_2=${OPTARG};;
+    i) path_to_satsuma_summary_chained_file=${OPTARG};;
+    j) path_to_directory_containing_gff_files=${OPTARG};;
 
     esac
     done
