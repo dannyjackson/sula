@@ -41,7 +41,7 @@ if [ $# -lt 1 ]
     [-3b] Path to directory containing gff files"
 
   else
-    while getopts a:b:c:d:1a:1b:1c:2a:3a:3b option
+    while getopts a:b:c:d:1a:1b:1c:2a:3a:3b: option
     do
     case "${option}"
     in
@@ -61,7 +61,7 @@ if [ $# -lt 1 ]
 
     #this converts the vcf file into a format that Simon Martin refers to as a ".geno", see his website for more information https://github.com/simonhmartin/genomics_general/tree/master/VCF_processing
 
-    echo a
+    echo $path_to_vcf_file
 
     #python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
