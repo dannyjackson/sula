@@ -9,7 +9,8 @@ with open(file) as f:
     while line:
         fdstat = line.split(",")[10]
         if fdstat > 0.3:
-            outputList.append(line).append("\n")
+            outputList.append(line)
+            outputList.append("\n")
         line = f.readline()
 
 print outputList
