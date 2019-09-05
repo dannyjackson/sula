@@ -4,9 +4,11 @@
 
 #Program stages are as follows. The first stage is required, but each stage after that is optional. This means that stage 1 and 2 can be performed, or stage 1 and 3, or simply stage 1.
 
-#1) Perform sliding window ABBA / BABA analyses that look for regions of introgression between population 2 and population 3 (most strongly sensitive to introgression from P3 -> P2)
-#2) Plot as a pdf the points at which introgression has been detected (note that if the input data is in scaffolds of relatively small size, this feature is not very meaningful as the scaffolds are not ordered in a biologically relevant way)
-#3) Requires that the reference genome used to generate the VCF file (hereafter refered to as the primary reference genome) does not have its own gff file but instead has been aligned to another genome using the SatsumaSynteny program (hereafter referred to as the secondary reference genome). This stage first identifies windows in which high introgression has been identified, and then identifies regions of the secondary reference genome where the regions of high introgression from the primary reference genome have aligned to. Finally, it looks at the gff file and pulls the names of genes that are within the regions of the secondary genome which have been identified as candidate regions of introgression. This list can easily be input into a gene ontology program, such as DAVID.
+#0) Parses the vcf file into a geno file. Can be skipped by providing the geno file instead of the vcf file.
+#1)Performs a genome wide ABBA BABA test. Outputs a block jackknife procedure to estimate standard deviation for D statistic. Outputs the D statistic, the D standard deviation, and the Z score in a text file with the suffix _genomewide_abbababa_stats.txt
+#2) Perform sliding window ABBA / BABA analyses that look for regions of introgression between population 2 and population 3 (most strongly sensitive to introgression from P3 -> P2)
+#3) Plot as a pdf the points at which introgression has been detected (note that if the input data is in scaffolds of relatively small size, this feature is not very meaningful as the scaffolds are not ordered in a biologically relevant way)
+#4) Requires that the reference genome used to generate the VCF file (hereafter refered to as the primary reference genome) does not have its own gff file but instead has been aligned to another genome using the SatsumaSynteny program (hereafter referred to as the secondary reference genome). This stage first identifies windows in which high introgression has been identified, and then identifies regions of the secondary reference genome where the regions of high introgression from the primary reference genome have aligned to. Finally, it looks at the gff file and pulls the names of genes that are within the regions of the secondary genome which have been identified as candidate regions of introgression. This list can easily be input into a gene ontology program, such as DAVID.
 
 #Inputs required for each stage:
 
@@ -16,7 +18,9 @@
 
 #2) The only thing necessary here is the go ahead from the user to proceed to this step.
 
-#3) Here we need two files, one is an output from Satsuma titled satsuma_summary.chained.out and the other is a path to the directory containing the gff files of the genome to which Satsuma aligned the primary reference genome. These should each be labelled as "secondaryreference_chromosome1.gff" "secondaryreference_chromosome2.gff" etc. using chromosome numbers that correspond with those used in the satsuma_summary_chained.out file.
+#3) The only thing necessary here is the go ahead from the user to proceed to this step.
+
+#4) Here we need two files, one is an output from Satsuma titled satsuma_summary.chained.out and the other is a path to the directory containing the gff files of the genome to which Satsuma aligned the primary reference genome. These should each be labelled as "secondaryreference_chromosome1.gff" "secondaryreference_chromosome2.gff" etc. using chromosome numbers that correspond with those used in the satsuma_summary_chained.out file.
 
 if [ $# -lt 1 ]
   then
@@ -29,19 +33,20 @@ if [ $# -lt 1 ]
     [-d] Path to Simon Martin's genomics_general-master directory
 
     #stage 1
-    [-1a] Complete path to input vcf file
+    [-1a] Complete path to input vcf or vcf.gz file, or to .geno or geno.gz file.
     [-1b] File with two tab separated columns. Column 1 has sample names as they appear in the vcf, and column 2 has the population names to which each sample will be attributed. Populations should be listed together, not with some individuals from Pop1 followed by Pop2 followed by more Pop1. IMPORTANTLY the last population will be treated as your outgroup in the ABBA BABA analysis, or your P4, so be sure to list it last.
-    [-1c] The outgroup population
 
     #stage 2
-    [-2a] write "y" if you want a plot, write "n" or leave empty if you don't
 
     #stage 3
+    [-2a] write "y" if you want a plot, write "n" or leave empty if you don't
+
+    #stage 4
     [-3a] Path to satsuma_summary_chained.out file
     [-3b] Path to directory containing gff files"
 
   else
-    while getopts a:b:c:d:e:f:g:h:i:j: option
+    while getopts a:b:c:d:e:f:g:h:i:j:k:l:m:n: option
     do
     case "${option}"
     in
@@ -51,20 +56,60 @@ if [ $# -lt 1 ]
     d) simonhmartin_directory=${OPTARG};;
     e) path_to_vcf_file=${OPTARG};;
     f) path_to_populations_file=${OPTARG};;
-    g) outgroup=${OPTARG};;
-    h) proceed_through_stage_2=${OPTARG};;
-    i) path_to_satsuma_summary_chained_file=${OPTARG};;
-    j) path_to_directory_containing_gff_files=${OPTARG};;
+    g) population1=${OPTARG};;
+    h) population2=${OPTARG};;
+    i) population3=${OPTARG};;
+    #j) outgroup=${OPTARG};;
+    k) proceed_through_stage_2=${OPTARG};;
+    l) path_to_satsuma_summary_chained_file=${OPTARG};;
+    m) path_to_directory_containing_gff_files=${OPTARG};;
 
     esac
     done
 
     #this converts the vcf file into a format that Simon Martin refers to as a ".geno", see his website for more information https://github.com/simonhmartin/genomics_general/tree/master/VCF_processing
+    if ${path_to_vcf_file: -3} = vcf
+      then
+        python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
-    python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
+        pops='python $github_directory/parsepopsfile.py $path_to_populations_file'
+
+        python $simonhmartin_directory/freq.py -g $output_directory/$project_name.geno.gz \
+        $pops --popsFile $path_to_populations_file -f phased --target derived \
+        -o $output_directory/$project_name.geno.tsv
+    fi
+
+    if ${path_to_vcf_file: -5} = vcf.gz
+      then
+        python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
+
+        pops='python $github_directory/parsepopsfile.py $path_to_populations_file'
+
+        python $simonhmartin_directory/freq.py -g $output_directory/$project_name.geno.gz \
+        $pops --popsFile $path_to_populations_file -f phased --target derived \
+        -o $output_directory/$project_name.geno.tsv
+    fi
+
+    if ${path_to_vcf_file: -4} = geno
+      then
+        pops='python $github_directory/parsepopsfile.py $path_to_populations_file'
+
+        python $simonhmartin_directory/freq.py -g $path_to_vcf_file \
+        $pops --popsFile $path_to_populations_file -f phased --target derived \
+        -o $output_directory/$project_name.geno.tsv
+    fi
+
+    if ${path_to_vcf_file: -6} = geno.gz
+      then
+        pops='python $github_directory/parsepopsfile.py $path_to_populations_file'
+
+        python $simonhmartin_directory/freq.py -g $path_to_vcf_file \
+        $pops --popsFile $path_to_populations_file -f phased --target derived \
+        -o $output_directory/$project_name.geno.tsv
+    fi
+
+
+    Rscript $github_directory/ABBAsliding.R $output_directory/$project_name.geno.tsv outputdirectory_$output_directory population1_$population1 $population2 $population3;
+
 
 fi
-
-#done for now--I've successfully outlined the script and made it parse my vcf file
-#next--decide if you also want it to output information using just simple not sliding abba baba tests, and incorporate that into your outline.
-#permissions
