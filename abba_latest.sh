@@ -90,7 +90,7 @@ if [ $# -lt 1 ]
         -o $output_directory/$project_name.geno.tsv
     fi
 
-    if ${path_to_vcf_file: -4} = echo geno
+    if [ ${path_to_vcf_file: -4} =  "geno" ]
       then
         pops='python $github_directory/parsepopsfile.py $path_to_populations_file'
 
