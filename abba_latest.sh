@@ -73,7 +73,7 @@ if [ $# -lt 1 ]
       then
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
-        pops=$('python [ echo $github_directory/parsepops.py ] [ $path_to_populations_file ]')
+        pops=$(python $github_directory/parsepops.py $path_to_populations_file)
         echo $pops
         python $simonhmartin_directory/freq.py -g $output_directory/$project_name.geno.gz \
         [echo $pops] --popsFile $path_to_populations_file -f phased --target derived \
