@@ -3,7 +3,7 @@ import csv
 
 file = sys.argv[1]
 
-outputList = []
+outputList = csv.writer()
 
 with open(file) as f:
     line = f.readline()
