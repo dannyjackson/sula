@@ -84,7 +84,7 @@ if [ $# -lt 1 ]
       then
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
-        pops='python $github_directory/parsepopsfile.py $path_to_populations_file'
+        pops=$(python $github_directory/parsepopsfile.py $path_to_populations_file)
 
         python $simonhmartin_directory/freq.py -g $output_directory/$project_name.geno.gz \
         $pops --popsFile $path_to_populations_file -f phased --target derived \
@@ -93,7 +93,7 @@ if [ $# -lt 1 ]
 
     if [ ${path_to_vcf_file: -4} =  "geno" ]
       then
-        pops='python $github_directory/parsepopsfile.py $path_to_populations_file'
+        pops=$(python $github_directory/parsepopsfile.py $path_to_populations_file)
 
         python $simonhmartin_directory/freq.py -g $path_to_vcf_file \
         $pops --popsFile $path_to_populations_file -f phased --target derived \
@@ -102,7 +102,7 @@ if [ $# -lt 1 ]
 
     if [ ${path_to_vcf_file: -6} = "geno.gz" ]
       then
-        pops='python $github_directory/parsepopsfile.py $path_to_populations_file'
+        pops=$(python $github_directory/parsepopsfile.py $path_to_populations_file)
 
         python $simonhmartin_directory/freq.py -g $path_to_vcf_file \
         $pops --popsFile $path_to_populations_file -f phased --target derived \
