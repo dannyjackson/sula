@@ -68,7 +68,7 @@ if [ $# -lt 1 ]
     done
 
     #this converts the vcf file into a format that Simon Martin refers to as a ".geno", see his website for more information https://github.com/simonhmartin/genomics_general/tree/master/VCF_processing
-    if ${path_to_vcf_file: -3} = echo vcf
+    if [${path_to_vcf_file: -3} = "vcf"]
       then
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
@@ -79,7 +79,7 @@ if [ $# -lt 1 ]
         -o $output_directory/$project_name.geno.tsv
     fi
 
-    if ${path_to_vcf_file: -5} = echo vcf.gz
+    if [${path_to_vcf_file: -5} = "vcf.gz"]
       then
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
@@ -99,7 +99,7 @@ if [ $# -lt 1 ]
         -o $output_directory/$project_name.geno.tsv
     fi
 
-    if ${path_to_vcf_file: -6} = echo geno.gz
+    if [${path_to_vcf_file: -6} = "geno.gz"]
       then
         pops='python $github_directory/parsepopsfile.py $path_to_populations_file'
 
