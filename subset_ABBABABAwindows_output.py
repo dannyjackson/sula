@@ -1,9 +1,8 @@
 import sys
-import csv
 
 file = sys.argv[1]
 
-outputList = csv.writer()
+outputList = []
 
 with open(file) as f:
     line = f.readline()
