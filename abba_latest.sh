@@ -66,7 +66,7 @@ if [ $# -lt 1 ]
 
     esac
     done
-
+echo $pops
     #this converts the vcf file into a format that Simon Martin refers to as a ".geno", see his website for more information https://github.com/simonhmartin/genomics_general/tree/master/VCF_processing
     if [ ${path_to_vcf_file: -3} = "vcf" ]
       then
