@@ -109,7 +109,7 @@ if [ $# -lt 1 ]
     fi
 
 
-    Rscript $github_directory/ABBAsliding.R inputfile_$output_directory/$project_name.geno.tsv outputdirectory_$output_directory population1_$population1 population2_$population2 population3_$population3;
+    Rscript $github_directory/ABBAsliding.r inputfile_$output_directory/$project_name.geno.tsv outputdirectory_$output_directory population1_$population1 population2_$population2 population3_$population3;
 
 
 fi
