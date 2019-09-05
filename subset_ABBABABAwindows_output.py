@@ -12,4 +12,4 @@ with open(file) as f:
             outputList.append(line)
         line = f.readline()
 
-write("\n".join(outputList))
+print("\n".join(outputList))
