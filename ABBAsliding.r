@@ -7,9 +7,9 @@ args = commandArgs()
 
 inputfile = substr(args[grep("inputfile_", args)],11,100000)
 outputdirectory = substr(args[grep("outputdirectory_", args)],17,100000)
-P1 = substr(args[grep("population1_", args)],13,100000)
-P2 = substr(args[grep("population2_", args)],13,100000)
-P3 = substr(args[grep("population3_", args)],13,100000)
+P1 = paste0(substr(args[grep("population1_", args)],13,100000))
+P2 = paste0(substr(args[grep("population2_", args)],13,100000))
+P3 = paste0(substr(args[grep("population3_", args)],13,100000))
 
 
 D.stat <- function(p1, p2, p3) {
@@ -18,7 +18,7 @@ D.stat <- function(p1, p2, p3) {
     (sum(ABBA) - sum(BABA)) / (sum(ABBA) + sum(BABA))
     }
 
-freq_table = read.table("$inputfile", header=T, as.is=T)
+freq_table = read.table(paste0(inputfile), header=T, as.is=T)
 
 #check for buried NAs
 for (i in 1:length(freq_table[1,])){
