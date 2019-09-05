@@ -12,3 +12,5 @@ with open(file) as f:
         if fdstat > 0.3:
             outputList.writerow(line)
         line = f.readline()
+
+outfile.write("\n".join(outputList))
