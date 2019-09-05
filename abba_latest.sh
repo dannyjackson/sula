@@ -75,7 +75,7 @@ if [ $# -lt 1 ]
         pops='python $github_directory/parsepopsfile.py $path_to_populations_file'
 
         python $simonhmartin_directory/freq.py -g $output_directory/$project_name.geno.gz \
-        $pops --popsFile $path_to_populations_file -f phased --target derived \
+        [echo $pops] --popsFile $path_to_populations_file -f phased --target derived \
         -o $output_directory/$project_name.geno.tsv
     fi
 
