@@ -64,3 +64,6 @@ if [ $# -lt 1 ]
     python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
 fi
+
+#done for now--I've successfully outlined the script and made it parse my vcf file
+#next--decide if you also want it to output information using just simple not sliding abba baba tests, and incorporate that into your outline.
