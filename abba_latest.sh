@@ -59,8 +59,11 @@ if [ $# -lt 1 ]
     g) population1=${OPTARG};;
     h) population2=${OPTARG};;
     i) population3=${OPTARG};;
-    #j) outgroup=${OPTARG};;
+    j) populationoutgroup=${OPTARG};;
     k) proceed_through_stage_2=${OPTARG};;
+    l) windowsize=${OPTARG};;
+    m) minimumsnps=${OPTARG};;
+    n) threads=${OPTARG};;
     l) path_to_satsuma_summary_chained_file=${OPTARG};;
     m) path_to_directory_containing_gff_files=${OPTARG};;
 
@@ -110,7 +113,16 @@ if [ $# -lt 1 ]
     fi
 
 
-    Rscript $github_directory/ABBAsliding.r inputfile_$output_directory/$project_name.geno.tsv outputdirectory_$output_directory population1_$population1 population2_$population2 population3_$population3;
+    Rscript $github_directory/ABBAwholegenome.r inputfile_$output_directory/$project_name.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory population1_$population1 population2_$population2 population3_$population3 > $output_directory/$project_name_wholegenomestats.txt
 
+    python $simonhmartin_directory/ABBABABAwindows.py \
+    -g $output_directory/$project_name.geno.gz -f phased \
+    -o $output_directory/$project_name_slidingwindows.csv.gz \
+    -P1 $population1 -P2 $population2 -P3 $population3 -O $populationoutgroup \
+    --popsFile $path_to_populations_file -w $windowsize -m $minimumsnps --T $threads
+
+    Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name
+
+    python $github_directory/subset_ABBABABAwindows_output.py
 
 fi
