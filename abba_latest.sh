@@ -123,6 +123,6 @@ if [ $# -lt 1 ]
 
     Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name
 
-    python $github_directory/subset_ABBABABAwindows_output.py
+    python $github_directory/subset_ABBABABAwindows_output.py $output_directory/$project_name
 
 fi
