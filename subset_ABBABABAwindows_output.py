@@ -3,7 +3,7 @@ import sys
 file = sys.argv[1]
 project_name = sys.argv[2] + ".txt"
 
-outputList = open(project_name, "w")
+outputList = open(project_name, "a")
 
 with open(file) as f:
     line = f.readline()
