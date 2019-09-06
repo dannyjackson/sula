@@ -10,7 +10,7 @@ with open(file) as f:
     while line:
         fdstat = line.split(",")[10]
         if fdstat > 0.3:
-            project_name.write(line)
+            outputList.write(line)
         line = f.readline()
 
-project_name.close()
+outputList.close()
