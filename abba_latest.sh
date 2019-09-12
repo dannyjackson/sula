@@ -46,7 +46,7 @@ if [ $# -lt 1 ]
     [-3b] Path to directory containing gff files"
 
   else
-    while getopts a:b:c:d:e:f:g:h:i:j:k:l:m:n: option
+    while getopts a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p: option
     do
     case "${option}"
     in
@@ -64,8 +64,9 @@ if [ $# -lt 1 ]
     l) windowsize=${OPTARG};;
     m) minimumsnps=${OPTARG};;
     n) threads=${OPTARG};;
-    l) path_to_satsuma_summary_chained_file=${OPTARG};;
-    m) path_to_directory_containing_gff_files=${OPTARG};;
+    o) path_to_satsuma_summary_chained_file=${OPTARG};;
+    p) path_to_directory_containing_gff_files=${OPTARG};;
+    q) fstat_threshold=${OPTARG};;
 
     esac
     done
@@ -123,6 +124,8 @@ if [ $# -lt 1 ]
 
     Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name
 
-    python $github_directory/subset_ABBABABAwindows_output.py $output_directory/$project_name_slidingwindows.csv.gz $output_directory/$project_name
+    python $github_directory/subset_ABBABABAwindows_output.py $output_directory/$project_name_slidingwindows.csv.gz $output_directory/$project_name $fstat_threshold
+    
+
 
 fi
