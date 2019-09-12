@@ -7,7 +7,7 @@ args = commandArgs()
 
 inputfile = substr(args[grep("inputfile_", args)],11,100000)
 outputdirectory = substr(args[grep("outputdirectory_", args)],17,100000)
-simonhmartin_directory = substr(args[grep("simonhmartin_directory", args)],17,100000)
+simonhmartin_directory = substr(args[grep("simonhmartin_directory_", args)],24,100000)
 P1 = paste0(substr(args[grep("population1_", args)],13,100000))
 P2 = paste0(substr(args[grep("population2_", args)],13,100000))
 P3 = paste0(substr(args[grep("population3_", args)],13,100000))
