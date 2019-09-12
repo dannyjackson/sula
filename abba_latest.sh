@@ -125,7 +125,7 @@ if [ $# -lt 1 ]
     -P1 $population1 -P2 $population2 -P3 $population3 -O $populationoutgroup \
     --popsFile $path_to_populations_file -w $windowsize -m $minimumsnps --T $threads
 
-    Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name
+    Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name outputdirectory_$output_directory
 
     #I think this next one is writing its output to a weird place. Double check it when the test run finshes.
     python $github_directory/subset_ABBABABAwindows_output.py $output_directory/$project_name_slidingwindows.csv.gz $output_directory/$project_name $fstat_threshold
