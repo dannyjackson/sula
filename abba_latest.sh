@@ -75,7 +75,7 @@ if [ $# -lt 1 ]
     done
 
     #this converts the vcf file into a format that Simon Martin refers to as a ".geno", see his website for more information https://github.com/simonhmartin/genomics_general/tree/master/VCF_processing
-
+    echo "a"
     if [ ${path_to_vcf_file: -3} = "vcf" ]
       then
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
@@ -86,7 +86,7 @@ if [ $# -lt 1 ]
         $pops --popsFile $path_to_populations_file -f phased --target derived \
         -o $output_directory/$project_name.geno.tsv
     fi
-
+    echo "b"
     if [ ${path_to_vcf_file: -5} = "vcf.gz" ]
       then
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
@@ -97,7 +97,7 @@ if [ $# -lt 1 ]
         $pops --popsFile $path_to_populations_file -f phased --target derived \
         -o $output_directory/$project_name.geno.tsv
     fi
-
+    echo "c"
     if [ ${path_to_vcf_file: -4} =  "geno" ]
       then
         pops=$(python $github_directory/parsepopsfile.py $path_to_populations_file)
@@ -106,7 +106,7 @@ if [ $# -lt 1 ]
         $pops --popsFile $path_to_populations_file -f phased --target derived \
         -o $output_directory/$project_name.geno.tsv
     fi
-
+    echo "d"
     if [ ${path_to_vcf_file: -6} = "geno.gz" ]
       then
         pops=$(python $github_directory/parsepopsfile.py $path_to_populations_file)
@@ -116,6 +116,7 @@ if [ $# -lt 1 ]
         -o $output_directory/$project_name.geno.tsv
     fi
 
+    echo "e"
 
     Rscript $github_directory/ABBAwholegenome.r inputfile_$output_directory/$project_name.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory population1_$population1 population2_$population2 population3_$population3 > $output_directory/$project_name_wholegenomestats.txt
 
