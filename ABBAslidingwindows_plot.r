@@ -5,7 +5,7 @@
 
 args = commandArgs()
 
-project_name = substr(args[grep("project_name_", args)],13,100000)
+project_name = substr(args[grep("project_name_", args)],14,100000)
 outputdirectory = substr(args[grep("outputdirectory_", args)],17,100000)
 
 AB_files <- c(paste0(outputdirectory,"/",project_name,"_slidingwindows.csv.gz"))
