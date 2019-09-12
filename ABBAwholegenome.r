@@ -47,7 +47,7 @@ n_blocks <- length(block_indices)
 
 #print_this_2 <- print(paste("Genome divided into", n_blocks, "blocks."))
 #write(print_this_2, file = paste0(outputdirectory,".abbawholegenome.stats.txt") append = TRUE)
-cat(paste("Genome divided into", n_blocks, "blocks."),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
+cat(paste("Genome divided into", n_blocks, "blocks."),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE))
 
 D_sd <- get_jackknife_sd(block_indices=block_indices,
                          FUN=D.stat,
@@ -55,7 +55,7 @@ D_sd <- get_jackknife_sd(block_indices=block_indices,
 
 #print_this_3 <- print(paste("D standard deviation = ", round(D_sd,4)))
 #write(print_this_3, file = paste0(outputdirectory,".abbawholegenome.stats.txt") append = TRUE)
-cat(paste("D standard deviation = ", round(D_sd,4)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
+cat(paste("D standard deviation = ", round(D_sd,4)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE))
 
 D_err <- D_sd/sqrt(n_blocks)
 D_Z <- D / D_err
@@ -63,4 +63,4 @@ D_Z <- D / D_err
 #print_this_4 <- print(paste("D Z score = ", round(D_Z,3)))
 #write(print_this_4, file = paste0(outputdirectory,".abbawholegenome.stats.txt", append = TRUE)
 
-cat(paste("D Z score = ", round(D_Z,3)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
+cat(paste("D Z score = ", round(D_Z,3)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE))
