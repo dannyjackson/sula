@@ -29,7 +29,7 @@ freq_table<-na.omit(freq_table2)
 
 D <- D.stat(freq_table[,P1], freq_table[,P2], freq_table[,P3])
 
-cat(paste("D =", round(D,4)),file=paste0(outputdirectory,project_name,"abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+cat(paste("D =", round(D,4)),file=paste0(outputdirectory,project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 print("this?")
 source(paste0(simonhmartin_directory,"/jackknife.R"))
 
