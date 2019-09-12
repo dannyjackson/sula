@@ -13,8 +13,6 @@ P1 = paste0(substr(args[grep("population1_", args)],13,100000))
 P2 = paste0(substr(args[grep("population2_", args)],13,100000))
 P3 = paste0(substr(args[grep("population3_", args)],13,100000))
 
-print("this1")
-print(simonhmartin_directory)
 D.stat <- function(p1, p2, p3) {
     ABBA <- (1 - p1) * p2 * p3
     BABA <- p1 * (1 - p2) * p3
@@ -30,7 +28,7 @@ freq_table<-na.omit(freq_table2)
 D <- D.stat(freq_table[,P1], freq_table[,P2], freq_table[,P3])
 
 cat(paste("D =", round(D,4)),file=paste0(outputdirectory,project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
-print("this?")
+
 source(paste0(simonhmartin_directory,"/jackknife.R"))
 
 block_indices <- get_block_indices(block_size=1e6,

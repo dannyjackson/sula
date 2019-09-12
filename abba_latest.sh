@@ -117,7 +117,7 @@ if [ $# -lt 1 ]
     fi
 
 
-    Rscript ${github_directory}/ABBAwholegenome.r inputfile_${output_directory}/${project_name}.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory project_name_$project_name population1_$population1 population2_$population2 population3_$population3 
+    Rscript ${github_directory}/ABBAwholegenome.r inputfile_${output_directory}/${project_name}.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory project_name_$project_name population1_$population1 population2_$population2 population3_$population3
 
     python $simonhmartin_directory/ABBABABAwindows.py \
     -g ${output_directory}/${project_name}.geno.gz -f phased \
@@ -131,24 +131,24 @@ if [ $# -lt 1 ]
     python $github_directory/subset_ABBABABAwindows_output.py $output_directory/${project_name}_slidingwindows.csv.gz $output_directory/$project_name $fstat_threshold
 
     #edit $IDK_OUTPUTOFABOVE to reflect however we output from the subsetting step.
-    awk 'BEGIN {FS="\t"}; {print $1 FS $2 FS $3}' $IDK_OUTPUTOFABOVE > $output_directory/$project_name_slidingwindows.bed
+    awk 'BEGIN {FS="\t"}; {print $1 FS $2 FS $3}' $IDK_OUTPUTOFABOVE > $output_directory/${project_name}_slidingwindows.bed
 
     #this isn't quite right... we want to read through each line of the bed file and use that line as the single range to extract...one at a time so we can trace it back to the abba test
     #bedtools getfasta [OPTIONS] -fi $path_to_referencegenome_fasta -bed $output_directory/$project_name_slidingwindows.bed
 
     while -r file,
     do
-      echo $file > $output_directory/$project_name_temp.fsa
+      echo $file > $output_directory/${project_name}_temp.fsa
 
       bedtools getfasta -fi $path_to_referencegenome_fasta -bed $output_directory/$project_name_temp.fsa
 
-      blastn -query $path_to_referencegenome_fasta -db "nt" -out $output_directory/$project_name_tempblast.txt
+      blastn -query $path_to_referencegenome_fasta -db "nt" -out $output_directory/${project_name}_tempblast.txt
 
       echo $file >> $output_directory/$project_name_allblast.txt
 
-      cat $output_directory/$project_name_tempblast.txt >> $output_directory/$project_name_allblast.txt
+      cat $output_directory/$project_name_tempblast.txt >> $output_directory/${project_name}_allblast.txt
 
-    done < $output_directory/$project_name_slidingwindows.bed
+    done < $output_directory/${project_name}_slidingwindows.bed
 
 
 
