@@ -128,11 +128,11 @@ if [ $# -lt 1 ]
     Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name outputdirectory_$output_directory
 
     #it works up to here!
-    
+
     python $github_directory/subset_ABBABABAwindows_output.py $output_directory/${project_name}_slidingwindows.csv.gz $output_directory/$project_name $fstat_threshold
 
     #edit $IDK_OUTPUTOFABOVE to reflect however we output from the subsetting step.
-    awk 'BEGIN {FS="\t"}; {print $1 FS $2 FS $3}' $IDK_OUTPUTOFABOVE > $output_directory/${project_name}_slidingwindows.bed
+    awk 'BEGIN {FS="\t"}; {print $1 FS $2 FS $3}' $output_directory/${project_name}.subsetabbababa.txt > $output_directory/${project_name}_slidingwindows.bed
 
     #this isn't quite right... we want to read through each line of the bed file and use that line as the single range to extract...one at a time so we can trace it back to the abba test
     #bedtools getfasta [OPTIONS] -fi $path_to_referencegenome_fasta -bed $output_directory/$project_name_slidingwindows.bed

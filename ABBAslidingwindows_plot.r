@@ -19,7 +19,7 @@ AB_tables[[x]]$fd = ifelse(AB_tables[[x]]$D < 0, 0, AB_tables[[x]]$fd)
 
 par(mfrow=c(length(AB_tables), 1), mar = c(4,4,1,1))
 
-pdf(file = paste0(outputdirectory,"/",project_name,"slidingwindow_fdstats_plot.pdf"), width = 20, height = 7, useDingbats=FALSE)
+pdf(file = paste0(outputdirectory,"/",project_name,".slidingwindow_fdstats_plot.pdf"), width = 20, height = 7, useDingbats=FALSE)
 for (x in 1:length(AB_tables)){
     plot(AB_tables[[x]]$fd,
     type = "l", xlim=c(0,17e6),ylim=c(0,1),ylab="Admixture Proportion",xlab="Position")
