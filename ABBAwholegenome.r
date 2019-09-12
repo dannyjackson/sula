@@ -29,7 +29,7 @@ freq_table<-na.omit(freq_table2)
 
 D <- D.stat(freq_table[,P1], freq_table[,P2], freq_table[,P3])
 
-cat(paste("D =", round(D,4)),file=paste0(outputdirectory,project_name,"abbawholegenome.stats.txt",sep="\n",append=TRUE))
+cat(paste("D =", round(D,4)),file=paste0(outputdirectory,project_name,"abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 print("this?")
 source(paste0(simonhmartin_directory,"/jackknife.R"))
 
@@ -39,15 +39,15 @@ block_indices <- get_block_indices(block_size=1e6,
 
 n_blocks <- length(block_indices)
 
-cat(paste("Genome divided into", n_blocks, "blocks."),file=paste0(outputdirectory,project_name,".abbawholegenome.stats.txt",sep="\n",append=TRUE))
+cat(paste("Genome divided into", n_blocks, "blocks."),file=paste0(outputdirectory,project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 
 D_sd <- get_jackknife_sd(block_indices=block_indices,
                          FUN=D.stat,
                          freq_table[,P1], freq_table[,P2], freq_table[,P3])
 
-cat(paste("D standard deviation = ", round(D_sd,4)),file=paste0(outputdirectory,project_name,".abbawholegenome.stats.txt",sep="\n",append=TRUE))
+cat(paste("D standard deviation = ", round(D_sd,4)),file=paste0(outputdirectory,project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 
 D_err <- D_sd/sqrt(n_blocks)
 D_Z <- D / D_err
 
-cat(paste("D Z score = ", round(D_Z,3)),file=paste0(outputdirectory,project_name,".abbawholegenome.stats.txt",sep="\n",append=TRUE))
+cat(paste("D Z score = ", round(D_Z,3)),file=paste0(outputdirectory,project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
