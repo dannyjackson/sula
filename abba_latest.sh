@@ -116,15 +116,15 @@ if [ $# -lt 1 ]
         -o $output_directory/$project_name.geno.tsv
     fi
 
-    echo "a"
-    Rscript $github_directory/ABBAwholegenome.r inputfile_$output_directory/$project_name.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory population1_$population1 population2_$population2 population3_$population3 > $output_directory/$project_name_wholegenomestats.txt
-    echo "b"
+
+    Rscript $github_directory/ABBAwholegenome.r inputfile_${output_directory}/$project_name.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory population1_$population1 population2_$population2 population3_$population3 > ${output_directory}/${project_name}_wholegenomestats.txt
+
     python $simonhmartin_directory/ABBABABAwindows.py \
     -g ${output_directory}/${project_name}.geno.gz -f phased \
     -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
     -P1 $population1 -P2 $population2 -P3 $population3 -O $populationoutgroup \
     --popsFile $path_to_populations_file -w $windowsize -m $minimumsnps --T $threads
-    echo "c"
+
     Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name outputdirectory_$output_directory
 
     #I think this next one is writing its output to a weird place. Double check it when the test run finshes.
