@@ -12,31 +12,31 @@ P1 = paste0(substr(args[grep("population1_", args)],13,100000))
 P2 = paste0(substr(args[grep("population2_", args)],13,100000))
 P3 = paste0(substr(args[grep("population3_", args)],13,100000))
 
-
+print("here1")
 D.stat <- function(p1, p2, p3) {
     ABBA <- (1 - p1) * p2 * p3
     BABA <- p1 * (1 - p2) * p3
     (sum(ABBA) - sum(BABA)) / (sum(ABBA) + sum(BABA))
     }
-
+print("here2")
 freq_table = read.table(paste0(inputfile), header=T, as.is=T)
-
+print("here3")
 #check for buried NAs
 for (i in 1:length(freq_table[1,])){
   print(anyNA(freq_table[,i]))
 }
-
+print("here4")
 #removing these values
 freq_table2<-freq_table
 freq_table<-na.omit(freq_table2)
-
+print("here5")
 D <- D.stat(freq_table[,P1], freq_table[,P2], freq_table[,P3])
-
+print("here6")
 #print_this_1 <- print(paste("D =", round(D,4)))
 #write(print_this_1, file = paste0(outputdirectory,".abbawholegenome.stats.txt") append = FALSE)
-#cat(paste("D =", round(D,4)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
-print(paste("D =", round(D,4))
+cat(paste("D =", round(D,4)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
 
+print("here7")
 source(paste0(simonhmartin_directory,"jackknife.R"))
 
 block_indices <- get_block_indices(block_size=1e6,
