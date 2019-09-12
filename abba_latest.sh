@@ -120,8 +120,8 @@ if [ $# -lt 1 ]
     Rscript $github_directory/ABBAwholegenome.r inputfile_$output_directory/$project_name.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory population1_$population1 population2_$population2 population3_$population3 > $output_directory/$project_name_wholegenomestats.txt
 
     python $simonhmartin_directory/ABBABABAwindows.py \
-    -g $output_directory/$project_name.geno.gz -f phased \
-    -o $output_directory/$project_name_slidingwindows.csv.gz \
+    -g ${output_directory}/${project_name}.geno.gz -f phased \
+    -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
     -P1 $population1 -P2 $population2 -P3 $population3 -O $populationoutgroup \
     --popsFile $path_to_populations_file -w $windowsize -m $minimumsnps --T $threads
 
@@ -149,7 +149,7 @@ if [ $# -lt 1 ]
       cat $output_directory/$project_name_tempblast.txt >> $output_directory/$project_name_allblast.txt
 
     done < $output_directory/$project_name_slidingwindows.bed
-    
+
 
 
 fi
