@@ -6,9 +6,9 @@
 args = commandArgs()
 
 project_name = substr(args[grep("project_name_", args)],11,100000)
-outputdirectory = substr(args[grep("outputdirectory_", args)],17,100000)
+outputdirectory = substr(args[grep("outputdirectory_", args)],20,100000)
 
-AB_files <- c(paste0(outputdirectory,"/",project_name,"_slidingwindows.csv.gz"))
+AB_files <- paste0(outputdirectory,"/",project_name,"_slidingwindows.csv.gz")
 AB_tables = lapply(AB_files, read.csv)
 head(AB_tables[[1]])
 
