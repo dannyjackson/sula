@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-#Genome wide ABBA BABA test with block jackknife procedue
+#Genome wide ABBA BABA test with block jackknife procedure
 
 #a file that is accessed by abba_complete.sh
 
@@ -34,7 +34,8 @@ D <- D.stat(freq_table[,P1], freq_table[,P2], freq_table[,P3])
 
 #print_this_1 <- print(paste("D =", round(D,4)))
 #write(print_this_1, file = paste0(outputdirectory,".abbawholegenome.stats.txt") append = FALSE)
-cat(paste("D =", round(D,4)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
+#cat(paste("D =", round(D,4)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
+print(paste("D =", round(D,4))
 
 source(paste0(simonhmartin_directory,"jackknife.R"))
 
