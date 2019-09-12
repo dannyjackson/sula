@@ -117,7 +117,7 @@ if [ $# -lt 1 ]
     fi
 
 
-    Rscript ${github_directory}/ABBAwholegenome.r inputfile_${output_directory}/${project_name}.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory project_name_$project_name population1_$population1 population2_$population2 population3_$population3 > ${output_directory}/${project_name}_wholegenomestats.txt
+    Rscript ${github_directory}/ABBAwholegenome.r inputfile_${output_directory}/${project_name}.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory project_name_$project_name population1_$population1 population2_$population2 population3_$population3 
 
     python $simonhmartin_directory/ABBABABAwindows.py \
     -g ${output_directory}/${project_name}.geno.gz -f phased \
