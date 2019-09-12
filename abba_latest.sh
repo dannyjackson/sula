@@ -64,9 +64,12 @@ if [ $# -lt 1 ]
     l) windowsize=${OPTARG};;
     m) minimumsnps=${OPTARG};;
     n) threads=${OPTARG};;
-    o) path_to_satsuma_summary_chained_file=${OPTARG};;
-    p) path_to_directory_containing_gff_files=${OPTARG};;
-    q) fstat_threshold=${OPTARG};;
+    o) fstat_threshold=${OPTARG};;
+    p) path_to_satsuma_summary_chained_file=${OPTARG};;
+    q) path_to_directory_containing_gff_files=${OPTARG};;
+    r) path_to_referencegenome_fasta=${OPTARG};;
+    s) path_to_referencegenome_bed=${OPTARG};;
+
 
     esac
     done
@@ -124,7 +127,28 @@ if [ $# -lt 1 ]
 
     Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name
 
+    #I think this next one is writing its output to a weird place. Double check it when the test run finshes.
     python $github_directory/subset_ABBABABAwindows_output.py $output_directory/$project_name_slidingwindows.csv.gz $output_directory/$project_name $fstat_threshold
+
+    #edit $IDK_OUTPUTOFABOVE to reflect however we output from the subsetting step.
+    awk 'BEGIN {FS="\t"}; {print $1 FS $2 FS $3}' $IDK_OUTPUTOFABOVE > $output_directory/$project_name_slidingwindows.bed
+
+    #this isn't quite right... we want to read through each line of the bed file and use that line as the single range to extract...one at a time so we can trace it back to the abba test
+    #bedtools getfasta [OPTIONS] -fi $path_to_referencegenome_fasta -bed $output_directory/$project_name_slidingwindows.bed
+
+    while -r file,
+    do
+      echo $file > $output_directory/$project_name_temp.fsa
+
+      bedtools getfasta -fi $path_to_referencegenome_fasta -bed $output_directory/$project_name_temp.fsa
+
+      blastn -query $path_to_referencegenome_fasta -db "nt" -out $output_directory/$project_name_tempblast.txt
+
+      echo $file >> $output_directory/$project_name_allblast.txt
+
+      cat $output_directory/$project_name_tempblast.txt >> $output_directory/$project_name_allblast.txt
+
+    done < $output_directory/$project_name_slidingwindows.bed
     
 
 

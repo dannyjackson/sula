@@ -10,7 +10,7 @@ with open(file) as f:
     line = f.readline()
     while line:
         fdstat = line.split(",")[10]
-        if fdstat > $threshold:
+        if fdstat > threshold:
             outputList.write(line)
         line = f.readline()
 

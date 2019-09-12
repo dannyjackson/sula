@@ -32,7 +32,9 @@ freq_table<-na.omit(freq_table2)
 
 D <- D.stat(freq_table[,P1], freq_table[,P2], freq_table[,P3])
 
-print(paste("D =", round(D,4)))
+#print_this_1 <- print(paste("D =", round(D,4)))
+#write(print_this_1, file = paste0(outputdirectory,".abbawholegenome.stats.txt") append = FALSE)
+cat(paste("D =", round(D,4)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
 
 source(paste0(simonhmartin_directory,"jackknife.R"))
 
@@ -42,15 +44,22 @@ block_indices <- get_block_indices(block_size=1e6,
 
 n_blocks <- length(block_indices)
 
-print(paste("Genome divided into", n_blocks, "blocks."))
+#print_this_2 <- print(paste("Genome divided into", n_blocks, "blocks."))
+#write(print_this_2, file = paste0(outputdirectory,".abbawholegenome.stats.txt") append = TRUE)
+cat(paste("Genome divided into", n_blocks, "blocks."),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
 
 D_sd <- get_jackknife_sd(block_indices=block_indices,
                          FUN=D.stat,
                          freq_table[,P1], freq_table[,P2], freq_table[,P3])
 
-print(paste("D standard deviation = ", round(D_sd,4)))
+#print_this_3 <- print(paste("D standard deviation = ", round(D_sd,4)))
+#write(print_this_3, file = paste0(outputdirectory,".abbawholegenome.stats.txt") append = TRUE)
+cat(paste("D standard deviation = ", round(D_sd,4)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
 
 D_err <- D_sd/sqrt(n_blocks)
 D_Z <- D / D_err
 
-print(paste("D Z score = ", round(D_Z,3)))
+#print_this_4 <- print(paste("D Z score = ", round(D_Z,3)))
+#write(print_this_4, file = paste0(outputdirectory,".abbawholegenome.stats.txt", append = TRUE)
+
+cat(paste("D Z score = ", round(D_Z,3)),file=paste0(outputdirectory,".abbawholegenome.stats.txt",sep="\n",append=TRUE)
