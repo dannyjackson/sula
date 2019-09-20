@@ -88,7 +88,7 @@ if [ $# -lt 1 ]
         -o $output_directory/$project_name.geno.tsv
     fi
 
-    if [ ${path_to_vcf_file: -5} = "vcf.gz" ]
+    if [ ${path_to_vcf_file: -6} = "vcf.gz" ]
       then
         echo "two test"
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
@@ -110,7 +110,7 @@ if [ $# -lt 1 ]
         -o $output_directory/$project_name.geno.tsv
     fi
 
-    if [ ${path_to_vcf_file: -6} = "geno.gz" ]
+    if [ ${path_to_vcf_file: -7} = "geno.gz" ]
       then
         echo "four test"
         pops=$(python $github_directory/parsepopsfile.py $path_to_populations_file)
