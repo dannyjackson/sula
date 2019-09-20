@@ -78,6 +78,7 @@ if [ $# -lt 1 ]
 
     if [ ${path_to_vcf_file: -3} = "vcf" ]
       then
+        echo "one test"
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
         pops=$(python $github_directory/parsepops.py $path_to_populations_file)
@@ -89,6 +90,7 @@ if [ $# -lt 1 ]
 
     if [ ${path_to_vcf_file: -5} = "vcf.gz" ]
       then
+        echo "two test"
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
         pops=$(python $github_directory/parsepopsfile.py $path_to_populations_file)
@@ -100,6 +102,7 @@ if [ $# -lt 1 ]
 
     if [ ${path_to_vcf_file: -4} =  "geno" ]
       then
+        echo "three test"
         pops=$(python $github_directory/parsepopsfile.py $path_to_populations_file)
 
         python $simonhmartin_directory/freq.py -g $path_to_vcf_file \
@@ -109,6 +112,7 @@ if [ $# -lt 1 ]
 
     if [ ${path_to_vcf_file: -6} = "geno.gz" ]
       then
+        echo "four test"
         pops=$(python $github_directory/parsepopsfile.py $path_to_populations_file)
 
         python $simonhmartin_directory/freq.py -g $path_to_vcf_file \
