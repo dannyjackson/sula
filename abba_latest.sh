@@ -125,11 +125,23 @@ if [ $# -lt 1 ]
 
     #it works up to here!
 
-    python $simonhmartin_directory/ABBABABAwindows.py \
-    -g ${output_directory}/${project_name}.geno.gz -f phased \
-    -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
-    -P1 ${population1} -P2 ${population2} -P3 ${population3} -O ${populationoutgroup} \
-    --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
+    if [ ${path_to_vcf_file: -3} = "vcf" ] || [ ${path_to_vcf_file: -6} = "vcf.gz" ]
+      then
+        python $simonhmartin_directory/ABBABABAwindows.py \
+        -g ${output_directory}/${project_name}.geno.gz -f phased \
+        -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
+        -P1 ${population1} -P2 ${population2} -P3 ${population3} -O ${populationoutgroup} \
+        --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
+    fi
+
+    if [ ${path_to_vcf_file: -4} =  "geno" ] || [ ${path_to_vcf_file: -7} = "geno.gz" ]
+      then
+        python $simonhmartin_directory/ABBABABAwindows.py \
+        -g $path_to_vcf_file -f phased \
+        -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
+        -P1 ${population1} -P2 ${population2} -P3 ${population3} -O ${populationoutgroup} \
+        --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
+    fi
 
     Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name outputdirectory_$output_directory
 
