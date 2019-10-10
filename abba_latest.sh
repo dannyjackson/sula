@@ -78,7 +78,7 @@ if [ $# -lt 1 ]
 
     if [ ${path_to_vcf_file: -3} = "vcf" ]
       then
-        echo "one test"
+        echo "file read as vcf"
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
         pops=$(python $github_directory/parsepops.py $path_to_populations_file)
@@ -90,7 +90,7 @@ if [ $# -lt 1 ]
 
     if [ ${path_to_vcf_file: -6} = "vcf.gz" ]
       then
-        echo "two test"
+        echo "file read as gzipped vcf"
         python $simonhmartin_directory/VCF_processing/parseVCF.py -i $path_to_vcf_file -o $output_directory/$project_name.geno.gz
 
         pops=$(python $github_directory/parsepops.py $path_to_populations_file)
@@ -102,7 +102,7 @@ if [ $# -lt 1 ]
 
     if [ ${path_to_vcf_file: -4} =  "geno" ]
       then
-        echo "three test"
+        echo "file read as geno"
         pops=$(python $github_directory/parsepops.py $path_to_populations_file)
 
         python $simonhmartin_directory/freq.py -g $path_to_vcf_file \
@@ -112,7 +112,7 @@ if [ $# -lt 1 ]
 
     if [ ${path_to_vcf_file: -7} = "geno.gz" ]
       then
-        echo "four test"
+        echo "file read as gzipped geno"
         pops=$(python $github_directory/parsepops.py $path_to_populations_file)
 
         python $simonhmartin_directory/freq.py -g $path_to_vcf_file \
@@ -128,8 +128,8 @@ if [ $# -lt 1 ]
     python $simonhmartin_directory/ABBABABAwindows.py \
     -g ${output_directory}/${project_name}.geno.gz -f phased \
     -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
-    -P1 $population1 -P2 $population2 -P3 $population3 -O $populationoutgroup \
-    --popsFile $path_to_populations_file -w $windowsize -m $minimumsnps --T $threads
+    -P1 ${population1} -P2 ${population2} -P3 ${population3} -O ${populationoutgroup} \
+    --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
 
     Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name outputdirectory_$output_directory
 
