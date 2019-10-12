@@ -145,7 +145,7 @@ if [ $# -lt 1 ]
 
     Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name outputdirectory_$output_directory
 
-
+    python $github_directory/subset_ABBABABAwindows.py $project_name $fstat_threshold
 
 
 fi
