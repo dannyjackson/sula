@@ -1,8 +1,8 @@
 import sys
 
-file = sys.argv[1]
-project_name = sys.argv[2] + ".subsetabbababa.txt"
-threshold = sys.argv[3]
+file = sys.argv[0]
+project_name = sys.argv[1] + ".subsetabbababa.txt"
+threshold = sys.argv[2]
 
 outputList = open(project_name, "a")
 
