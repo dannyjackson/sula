@@ -10,11 +10,8 @@ with open(file) as f:
     line = f.readline()
     while line:
         fdstat = line.split(",")[9]
-        if ( fdstat == "fd" ):
+        if fdstat > threshold:
             outputList.write(line)
-        if ( fdstat != "fd" ):
-          if ( float(fdstat) > float(threshold) ):
-              outputList.write(line)
         line = f.readline()
 
 outputList.close()
