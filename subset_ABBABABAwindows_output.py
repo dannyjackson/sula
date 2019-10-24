@@ -1,7 +1,7 @@
 import sys
 
-file = sys.argv[0]
-project_name = sys.argv[1] + ".subsetabbababa.txt"
+file = sys.argv[1] + "_slidingwindows.csv.gz"
+project_name = sys.argv[1] + "_slidingwindows.subsetfd.txt"
 threshold = sys.argv[2]
 
 outputList = open(project_name, "a")
@@ -9,7 +9,7 @@ outputList = open(project_name, "a")
 with open(file) as f:
     line = f.readline()
     while line:
-        fdstat = line.split(",")[1]
+        fdstat = line.split(",")[9]
         if ( fdstat == "fd" ):
             outputList.write(line)
         if ( fdstat != "fd" ):
