@@ -8,7 +8,7 @@ args = commandArgs()
 project_name = substr(args[grep("project_name_", args)],14,100000)
 outputdirectory = substr(args[grep("outputdirectory_", args)],17,100000)
 
-data <- read.csv(paste0(outputdirectory,"/",project_name,"_slidingwindows.csv.gz"))
+data <- read.csv(paste0(outputdirectory,"/",project_name,"_slidingwindows.csv"))
 
 pdf(file = paste0(outputdirectory,"/",project_name,".slidingwindow_fdstats_plot.pdf"), width = 20, height = 7, useDingbats=FALSE)
 hist(data$fd, xlim=c(0,1), breaks = c(-1000,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1000), ylim=c(0,100))
