@@ -10,8 +10,6 @@ outputdirectory = substr(args[grep("outputdirectory_", args)],17,100000)
 
 data <- read.csv(paste0(outputdirectory,"/",project_name,"_slidingwindows.csv.gz"))
 
-par(mfrow=c(length(AB_tables), 1), mar = c(4,4,1,1))
-
 pdf(file = paste0(outputdirectory,"/",project_name,".slidingwindow_fdstats_plot.pdf"), width = 20, height = 7, useDingbats=FALSE)
 hist(data$fd, xlim=c(0,1), breaks = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1000), ylim=c(0,1000))
   dev.off()
