@@ -104,7 +104,7 @@ if [ $# -lt 1 ]
         --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
     fi
 
-    Rscript $github_directory/ABBAslidingwindows_plot.r project_name_$project_name outputdirectory_$output_directory
+    Rscript $github_directory/ABBAslidingwindows_mine_plot.r project_name_$project_name outputdirectory_$output_directory
 
     python $github_directory/subset_ABBABABAwindows_output.py ${output_directory}/${project_name} $fstat_threshold
 
