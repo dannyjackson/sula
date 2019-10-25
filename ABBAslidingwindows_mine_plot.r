@@ -23,7 +23,7 @@ cat(paste0("List of fd values > 1 :"),file=paste0(outputdirectory,"/",project_na
 
 cat(paste0(greaterone),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep=",",append=TRUE)
 
-cat(paste("Length of total values before NA filtering : ", length(data_fd[!is.na(data_fd)])),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+cat(paste("\n","Length of total values before NA filtering : ", length(data_fd[!is.na(data_fd)])),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 
 data_fd[data_fd<0] <- NA
 data_fd[data_fd>1] <- NA
