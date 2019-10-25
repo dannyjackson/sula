@@ -108,5 +108,5 @@ if [ $# -lt 1 ]
 
     python $github_directory/subset_ABBABABAwindows_output.py ${output_directory}/${project_name} $fstat_threshold
 
-
+    python $github_directory/subset_satsumachain_by_ABBA.py ${output_directory}/${project_name} ${path_to_satsuma_summary_chained_file}
 fi

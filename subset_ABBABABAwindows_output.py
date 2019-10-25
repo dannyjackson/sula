@@ -1,6 +1,6 @@
 import sys, gzip
 
-file = sys.argv[1] + "_slidingwindows.csv.gz"
+file = sys.argv[1] + "_slidingwindows.csv"
 project_name = sys.argv[1] + "_slidingwindows.subsetfd.txt"
 threshold = sys.argv[2]
 

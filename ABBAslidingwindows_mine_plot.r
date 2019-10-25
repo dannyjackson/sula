@@ -8,7 +8,7 @@ args = commandArgs()
 project_name = substr(args[grep("project_name_", args)],14,100000)
 outputdirectory = substr(args[grep("outputdirectory_", args)],17,100000)
 
-data <- read.csv(project_name)
+data <- read.csv(paste0(outputdirectory,"/",project_name,"_slidingwindows.csv.gz"))
 
 par(mfrow=c(length(AB_tables), 1), mar = c(4,4,1,1))
 
