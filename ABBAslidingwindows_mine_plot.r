@@ -19,7 +19,7 @@ cat(paste("Number of fd sites < 0 = ", length(lesszero)),file=paste0(outputdirec
 greaterone <- data_fd[data_fd>1]
 
 cat(paste("Number of fd sites > 1 = ", length(greaterone)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
-cat(paste("List of fd values > 1 : "), paste0(greaterone)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+cat(paste0("List of fd values > 1 :", greaterone),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 
 cat(paste("Length of total values before NA filtering : ", length(data_fd[!is.na(data_fd)])),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 
