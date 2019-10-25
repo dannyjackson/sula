@@ -10,6 +10,25 @@ outputdirectory = substr(args[grep("outputdirectory_", args)],17,100000)
 
 data <- read.csv(paste0(outputdirectory,"/",project_name,"_slidingwindows.csv.gz"))
 
+data_fd <- c(data$fd)
+
+lesszero <- data_fd[data_fd<0]
+
+cat(paste("Number of fd sites < 0 = ", length(lesszero)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+cat(paste("List of fd values < 0 : ", lesszero),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
+greaterone <- data_fd[data_fd>1]
+
+cat(paste("Number of fd sites > 1 = ", length(greaterone)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+cat(paste("List of fd values > 1 : ", greaterone),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
+cat(paste("Length of total values before NA filtering : ", length(data_fd[!is.na(data_fd)])),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
+data_fd[data_fd<0] <- NA
+data_fd[data_fd>1] <- NA
+
+cat(paste("Length of total values after NA filtering : ", length(data_fd[!is.na(data_fd)])),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
 pdf(file = paste0(outputdirectory,"/",project_name,".slidingwindow_fdstats_plot.pdf"), width = 20, height = 7, useDingbats=FALSE)
-hist(data$fd, xlim=c(0,1), breaks =   c(-1000,0,0.05,0.1,0.15,0.20,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1000), ylim=c(0,3))
+hist(data_fd, xlim=c(0,1))
   dev.off()
