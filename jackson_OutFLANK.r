@@ -1,14 +1,15 @@
 #!/usr/bin/env Rscript
 #compliments jackson_OutFLANK.sh
 
+popNames = commandArgs()
+
 library("OutFLANK")
 library("vcfR")
 
 SNPmat <- read.table("outflank_SNPmat.txt")
 
 locusNames <- read.table("outflank_loci_names.txt")
-popNames = commandArgs()
-
+write.table(popNames, file="test.txt")
 #Eliminate rows with NA
 SNPmat <- SNPmat[complete.cases(SNPmat), ]
 
