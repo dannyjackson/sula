@@ -6,7 +6,7 @@ arguments = ""
 with open(file) as f:
     line = f.readline()
     while line:
-        pop = line.split()[1]
+        pop = line.split()
         arguments = arguments + pop + ","
         arguments = arguments[:-1]
         line = f.readline()
