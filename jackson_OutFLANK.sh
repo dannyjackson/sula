@@ -35,6 +35,6 @@ cut -f 2 outflank_matrix.txt.012.pos > loci_names.txt
 
 # Call R script
 
-Rscript ${github_directory}/jacksonOutFLANK.R $pops
+Rscript ~/sula/jacksonOutFLANK.R $pops
 
 fi
