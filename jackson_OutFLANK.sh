@@ -31,7 +31,7 @@ sed -i 's/-1/9/g' outflank_matrix.txt.012
 awk '{$1=""; print substr($0,1)}' outflank_matrix.txt.012 > outflank_SNPmat.txt
 
 # Take the loci name
-cut -f 2 outflank_matrix.txt.012.pos > loci_names.txt
+cut -f 2 outflank_matrix.txt.012.pos > outflank_loci_names.txt
 
 # Call R script
 
