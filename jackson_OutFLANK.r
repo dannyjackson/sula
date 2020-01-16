@@ -10,6 +10,7 @@ SNPmat <- read.table("outflank_SNPmat.txt")
 
 locusNames <- read.table("outflank_loci_names.txt")
 write.table(popNames, file="test.txt")
+
 #Eliminate rows with NA
 SNPmat <- SNPmat[complete.cases(SNPmat), ]
 
