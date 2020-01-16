@@ -2,7 +2,7 @@
 #compliments jackson_OutFLANK.sh
 
 args = commandArgs(trailingOnly = TRUE)
-popNames = read.table("outflank_pops.txt")
+popNames = read.table("pops.txt")
 
 library("OutFLANK")
 library("vcfR")
