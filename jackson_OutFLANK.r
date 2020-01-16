@@ -19,14 +19,14 @@ FstDataFrame <- MakeDiploidFSTMat(SNPmat,locusNames,popNames)
 
 write.table(FstDataFrame, file = "outflank_FstDataFrame.txt")
 
-pdf(file = "outflank_plot1.pdf", width = 20, height = 20, useDingbats=FALSE)
+pdf(file = "outflank_plot1.pdf", width = 5, height = 5, useDingbats=FALSE)
 plot(FstDataFrame$FST, FstDataFrame$FSTNoCorr, xlim = c(-0.01,0.3),
      ylim = c(-0.01, 0.3), pch = 20)
 abline(0, 1) # Checking the effect of sample size on Fst since FSTNoCorr will be used in the follow
   dev.off()
 
 
-pdf(file = "outflank_plot2.pdf", width = 20, height = 20, useDingbats=FALSE)
+pdf(file = "outflank_plot2.pdf", width = 5, height = 5, useDingbats=FALSE)
 hist(FstDataFrame$FSTNoCorr)
   dev.off()
 
