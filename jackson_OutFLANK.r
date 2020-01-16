@@ -2,7 +2,7 @@
 #compliments jackson_OutFLANK.sh
 
 args = commandArgs(trailingOnly = TRUE)
-popNames = substr(args[grep("pops_", args)],6,10000)
+popNames = read.table("outflank_pops.txt")
 
 library("OutFLANK")
 library("vcfR")
@@ -10,7 +10,6 @@ library("vcfR")
 SNPmat <- read.table("outflank_SNPmat.txt")
 
 locusNames <- read.table("outflank_loci_names.txt")
-write.table(popNames, file="test.txt")
 
 #Eliminate rows with NA
 SNPmat <- SNPmat[complete.cases(SNPmat), ]

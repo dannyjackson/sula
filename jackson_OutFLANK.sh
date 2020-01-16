@@ -3,18 +3,14 @@
 
 if [ $# -lt 1 ]
   then
-    echo "Runs OutFLANK given any vcf as input.
-    [-v] vcf file
-    [-o] Output directory for files
-    [-p] Populations as comma separated string, e.g. bfbo,bfbo,pebo,pebo"
+    echo "Runs OutFLANK given any vcf as input. Requires file in working directory titled pops.txt 
+    [-v] vcf file"
   else
     while getopts v:o: option
     do
     case "${option}"
     in
     v) dataset=${OPTARG};;
-    o) outDir=${OPTARG};;
-    p) pops=${OPTARG};;
 
     esac
     done
@@ -35,6 +31,6 @@ cut -f 2 outflank_matrix.txt.012.pos > outflank_loci_names.txt
 
 # Call R script
 
-Rscript ~/sula/jackson_OutFLANK.r pops_BFBO,BFBO,BFBO,BFBO,BFBO,BFBO,PEBO,PEBO,PEBO,PEBO,PEBO,PEBO
+Rscript ~/sula/jackson_OutFLANK.r
 
 fi
