@@ -38,7 +38,7 @@ OutFLANKResultsPlotter(object, withOutliers = TRUE, NoCorr = TRUE, Hmin = 0.01,
   dev.off()
 
 
-# Identify Outliers
+# Identify Outlier
 outliers <- object$results$LocusName[object$results$OutlierFlag == TRUE]
 
 write.table(outliers, file="outflank_outliers.txt")
