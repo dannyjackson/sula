@@ -2,7 +2,7 @@
 #compliments jackson_OutFLANK.sh
 
 args = commandArgs()
-popNames = args[6]
+popNames = substr(args[6])
 
 library("OutFLANK")
 library("vcfR")
