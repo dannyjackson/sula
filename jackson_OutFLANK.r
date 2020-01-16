@@ -1,7 +1,8 @@
 #!/usr/bin/env Rscript
 #compliments jackson_OutFLANK.sh
 
-popNames = commandArgs()
+args = commandArgs()
+popNames = args[6]
 
 library("OutFLANK")
 library("vcfR")
