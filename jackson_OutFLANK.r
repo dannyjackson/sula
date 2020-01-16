@@ -2,7 +2,7 @@
 #compliments jackson_OutFLANK.sh
 
 args = commandArgs(trailingOnly = TRUE)
-popNames = args[6]
+popNames = substr(args[grep("pops_", args)],6,10000)
 
 library("OutFLANK")
 library("vcfR")
