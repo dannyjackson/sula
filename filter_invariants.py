@@ -4,15 +4,12 @@ import sys, subprocess
 phylip = sys.argv[1]
 
 code = []
-header = []
 samples = []
-for l in open(phylip):
-  columns = l.split("\n")
-  if len(l) < 50:
-      header.append(columns[0])
-  if len(l) > 50:
-      code.append(columns[0][10:len(columns[0])])
-      samples.append(columns[0][0:9])
+with open(phylip) as f:
+  next(f)
+  for columns in f:
+    code.append(columns[10:len(columns)])
+    samples.append(columns[0:9])
 
 sequence = list(range(0,len(code[0])))
 
@@ -38,8 +35,12 @@ for v in variant_sites:
 x = range(0,len(temp))
 y = range(0,len(temp[0]))
 
+header = []
+header.append(len(samples))
+header.append(len(temp))
+
 trimmed_matrix = []
-trimmed_matrix.append(header[0])
+trimmed_matrix.append(header)
 trimmed_matrix.append("\n")
 for w in y:
   trimmed_matrix.append(samples[w])
