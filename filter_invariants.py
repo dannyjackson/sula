@@ -5,7 +5,7 @@ phylip = sys.argv[1]
 
 code = []
 samples = []
-with open(phylip) as f:
+with open("temp.min4.phy") as f:
   next(f)
   for columns in f:
     code.append(columns[10:len(columns)])
@@ -36,8 +36,9 @@ x = range(0,len(temp))
 y = range(0,len(temp[0]))
 
 header = []
-header.append(len(samples))
-header.append(len(temp))
+header.append(str(len(samples)))
+header.append(" ")
+header.append(str(len(temp)))
 
 trimmed_matrix = []
 trimmed_matrix.append(header)
