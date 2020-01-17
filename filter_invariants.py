@@ -7,12 +7,12 @@ code = []
 header = []
 samples = []
 for l in open(phylip):
-  columns = l.split('\t')
-  if len(columns) == 1:
-    header.append(columns[0])
-  if len(columns) > 1:
-    code.append(columns[1])
-    samples.append(columns[0])
+  columns = l.split("\n")
+  if len(l) < 50:
+      header.append(columns[0])
+  if len(l) > 50:
+      code.append(columns[0][10:len(columns[0])])
+      samples.append(columns[0][0:9])
 
 
 sequence = list(range(0,len(code[0])))
