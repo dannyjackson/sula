@@ -14,7 +14,6 @@ for l in open(phylip):
       code.append(columns[0][10:len(columns[0])])
       samples.append(columns[0][0:9])
 
-
 sequence = list(range(0,len(code[0])))
 
 variant_sites = set()
@@ -41,6 +40,7 @@ y = range(0,len(temp[0]))
 
 trimmed_matrix = []
 trimmed_matrix.append(header[0])
+trimmed_matrix.append("\n")
 for w in y:
   trimmed_matrix.append(samples[w])
   trimmed_matrix.append("\t")
