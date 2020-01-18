@@ -5,7 +5,7 @@ phylip = sys.argv[1]
 
 code = []
 samples = []
-with open("temp.min4.phy") as f:
+with open(phylip) as f:
   next(f)
   for columns in f:
     code.append(columns[10:len(columns)])
