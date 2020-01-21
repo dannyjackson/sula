@@ -32,16 +32,12 @@ for i in sequence:
     for site in pop1_generator:
         if int(allele_column[int(site)]) is 9:
             p1_missing.add(site)
-        if len(p1_missing) is 5:
-            removesites.append(i)
-        if len(p1_missing) is 6:
+        if len(p1_missing) >= 5:
             removesites.append(i)
     for site in pop2_generator:
         if int(allele_column[int(site)]) is 9:
             p2_missing.add(site)
-        if len(p2_missing) is 5:
-            removesites.append(i)
-        if len(p2_missing) is 6:
+        if len(p2_missing) >= 5:
             removesites.append(i)
     p1_missing = set()
     p2_missing = set()
