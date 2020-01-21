@@ -8,7 +8,7 @@ import sys
 
 p1_indv = sys.argv[0]
 p2_indv = sys.argv[1]
-
+print(p1_indv)
 code = []
 with open("outflank_matrix.txt.012") as f:
     for column in f:
