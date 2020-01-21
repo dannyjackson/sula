@@ -9,8 +9,6 @@ import sys, subprocess
 p1_indv = sys.argv[1]
 p2_indv = sys.argv[2]
 
-print(sys.argv[1])
-print(sys.argv[2])
 code = []
 with open("outflank_SNPmat.txt") as f:
     for column in f:

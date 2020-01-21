@@ -6,7 +6,7 @@ if [ $# -lt 1 ]
     echo "Runs OutFLANK given any vcf as input. Requires file in working directory titled pops.txt
     [-v] vcf file, [-p] number of individuals in population 1, [-q] number of individuals in population 2"
   else
-    while getopts v:o: option
+    while getopts v:p:q: option
     do
     case "${option}"
     in
