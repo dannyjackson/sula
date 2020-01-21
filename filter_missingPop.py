@@ -8,7 +8,7 @@ import sys
 
 p1_indv = sys.argv[1]
 p2_indv = sys.argv[2]
-print(p1_indv)
+
 code = []
 with open("outflank_matrix.txt.012") as f:
     for column in f:
@@ -43,8 +43,11 @@ for i in sequence:
     p2_missing = set()
 
 numbersites = range(len(removesites))
+print(len(numbersites))
+
 for rm in numbersites:
     sequence.remove(removesites[rm])
+
 
 x = range(len(sequence))
 y = range(len(code))
@@ -58,7 +61,7 @@ for w in y:
 
 trimmed_loci = []
 for z in x:
-    trimmed_loci.append(locinames[sequence[z]])
+    trimmed_loci.append(locinames[sequence[z]-1])
     trimmed_loci.append("\n")
 
 
