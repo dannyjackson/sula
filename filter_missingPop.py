@@ -4,7 +4,7 @@
 # 2. Evaluate each site to identify if it is missing for all BFBO individuals
 # 3. Evaluate each site to identify if it is missing for all PEBO individuals
 # 4. If either 2 or 3 is TRUE, remove the site from both the 012 file and the locus_names file.
-import sys
+import sys, subprocess
 
 p1_indv = sys.argv[1]
 p2_indv = sys.argv[2]
