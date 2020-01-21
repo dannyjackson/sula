@@ -23,8 +23,8 @@ sequence = list(range(0,len(code[0])))
 
 p1_missing = set()
 p2_missing = set()
-pop1_generator = list(range(0,int(p1_indv[0])))
-pop2_generator = list(range(int(p1_indv),int(p2_indv[0])))
+pop1_generator = list(range(0,int(p1_indv)))
+pop2_generator = list(range(int(p1_indv),int(p2_indv)))
 removesites = []
 
 for i in sequence:
