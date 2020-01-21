@@ -10,7 +10,7 @@ p1_indv = sys.argv[1]
 p2_indv = sys.argv[2]
 
 code = []
-with open("outflank_matrix.txt.012") as f:
+with open("outflank_SNPmat.txt") as f:
     for column in f:
         code.append(column.split())
 
