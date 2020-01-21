@@ -6,8 +6,8 @@
 # 4. If either 2 or 3 is TRUE, remove the site from both the 012 file and the locus_names file.
 import sys
 
-p1_indv = sys.argv[0]
-p2_indv = sys.argv[1]
+p1_indv = sys.argv[1]
+p2_indv = sys.argv[2]
 print(p1_indv)
 code = []
 with open("outflank_matrix.txt.012") as f:
