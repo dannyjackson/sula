@@ -32,7 +32,7 @@ awk '{$1=""; print substr($0,1)}' outflank_matrix.txt.012 > outflank_SNPmat.txt
 cut -f 2 outflank_matrix.txt.012.pos > outflank_loci_names.txt
 
 # Remove sites that are invariant within each population
-python ~/sula/filter_missingPop.py p1_indv p2_indv
+python ~/sula/filter_missingPop.py $p1_indv $p2_indv
 
 # Call R script
 
