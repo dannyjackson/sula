@@ -7,9 +7,9 @@ popNames = read.table("pops.txt")
 library("OutFLANK")
 library("vcfR")
 
-SNPmat <- read.table("outflank_SNPmat.txt")
+SNPmat <- read.table("trimmed.012.txt")
 
-locusNames <- read.table("outflank_loci_names.txt")
+locusNames <- read.table("trimmed.locinames.txt")
 
 #Eliminate rows with NA
 SNPmat <- SNPmat[complete.cases(SNPmat), ]
