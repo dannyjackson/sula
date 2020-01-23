@@ -30,7 +30,7 @@ pdf(file = "outflank_plot2.pdf", width = 5, height = 5, useDingbats=FALSE)
 hist(FstDataFrame$FSTNoCorr)
   dev.off()
 
-object <- OutFLANK(FstDataFrame, NumberOfSamples=12, qthreshold = 0.1,
+object <- OutFLANK(FstDataFrame, NumberOfSamples=2, qthreshold = 0.1,
                RightTrimFraction = 0.4)
 
 pdf(file = "outflank_plot3.pdf", width = 20, height = 20, useDingbats=FALSE)
