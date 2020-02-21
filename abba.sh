@@ -26,10 +26,6 @@ if [ $# -lt 1 ]
     m) minimumsnps=${OPTARG};;
     n) threads=${OPTARG};;
     o) fstat_threshold=${OPTARG};;
-    p) path_to_satsuma_summary_chained_file=${OPTARG};;
-    q) path_to_directory_containing_gff_files=${OPTARG};;
-    r) path_to_referencegenome_fasta=${OPTARG};;
-    s) path_to_referencegenome_bed=${OPTARG};;
 
 
     esac
@@ -104,9 +100,4 @@ if [ $# -lt 1 ]
         --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
     fi
 
-    Rscript $github_directory/ABBAslidingwindows_mine_plot.r project_name_$project_name outputdirectory_$output_directory
-
-    python $github_directory/subset_ABBABABAwindows_output.py ${output_directory}/${project_name} $fstat_threshold
-
-    python $github_directory/subset_satsumachain_by_ABBA.py ${output_directory}/${project_name} ${path_to_satsuma_summary_chained_file}
 fi
