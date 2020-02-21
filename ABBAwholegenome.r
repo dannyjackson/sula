@@ -12,6 +12,8 @@ project_name = substr(args[grep("project_name_", args)],14,100000)
 P1 = paste0(substr(args[grep("population1_", args)],13,100000))
 P2 = paste0(substr(args[grep("population2_", args)],13,100000))
 P3 = paste0(substr(args[grep("population3_", args)],13,100000))
+P3a = paste0(substr(args[grep("populationA_", args)],13,100000))
+P3b = paste0(substr(args[grep("populationB_", args)],13,100000))
 
 D.stat <- function(p1, p2, p3) {
     ABBA <- (1 - p1) * p2 * p3
@@ -47,5 +49,23 @@ cat(paste("D standard deviation = ", round(D_sd,4)),file=paste0(outputdirectory,
 
 D_err <- D_sd/sqrt(n_blocks)
 D_Z <- D / D_err
+D_p <- 2*pnorm(-abs(D_Z))
 
 cat(paste("D Z score = ", round(D_Z,3)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
+cat(paste("D p value = ", round(D_p,3)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
+
+
+# Estimate Admixture Proportion
+
+ABBA_1_2_3a = abba(freq_table[,P1], freq_table[,P2], freq_table[,P3a])
+BABA_1_2_3a = baba(freq_table[,P1], freq_table[,P2], freq_table[,P3a])
+
+ABBA_1_3b_3a = abba(freq_table[,P1], freq_table[,P3b], freq_table[,P3a])
+BABA_1_3b_3a = baba(freq_table[,P1], freq_table[,P3b], freq_table[,P3a])
+
+f = (sum(ABBA_1_2_3a) - sum(BABA_1_2_3a))/
+     (sum(ABBA_1_3b_3a) - sum(BABA_1_3b_3a))
+
+cat(paste("Admixture proportion (f value) = ", round(f,3)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
