@@ -78,7 +78,7 @@ if [ $# -lt 1 ]
     fi
 
 
-    Rscript ${github_directory}/ABBAwholegenome.r inputfile_${output_directory}/${project_name}.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory project_name_$project_name population1_$population1 population2_$population2 population3_$population3 populationA_$population3a populationB_$population3b
+    Rscript ${github_directory}/ABBAwholegenome.r inputfile_${output_directory}/${project_name}.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory project_name_$project_name
 
     #it works up to here!
 
@@ -100,4 +100,6 @@ if [ $# -lt 1 ]
         --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
     fi
 
+
+    python $simonhmartin_directory/ABBABABAwindows.py -g data/${output_directory}/${project_name}.geno.gz -f phased -o -o ${output_directory}/${project_name}.w50m1s10.csv.gz -P1 flo -P2 txn -P3 ama -O slv --popsFile data/bar92.pop.txt -w 50000 -m 1000 -s 20000 --minData 0.5 --T 2
 fi
