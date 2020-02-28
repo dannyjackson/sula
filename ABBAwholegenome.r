@@ -6,6 +6,7 @@
 args = commandArgs()
 
 inputfile = substr(args[grep("inputfile_", args)],11,100000)
+inputadmx = substr(args[grep("inputadmx_", args)],11,100000)
 outputdirectory = substr(args[grep("outputdirectory_", args)],17,100000)
 simonhmartin_directory = substr(args[grep("simonhmartin_directory_", args)],24,100000)
 project_name = substr(args[grep("project_name_", args)],14,100000)
@@ -54,11 +55,17 @@ cat(paste("D p value = ", round(D_p,3)),file=paste0(outputdirectory,"/",project_
 
 # Estimate Admixture Proportion
 
-ABBA_1_2_3a = abba(freq_table[,P1], freq_table[,P2], freq_table[,P3a])
-BABA_1_2_3a = baba(freq_table[,P1], freq_table[,P2], freq_table[,P3a])
+admx_table = read.table(paste0(inputadmx), header=T, as.is=T)
 
-ABBA_1_3b_3a = abba(freq_table[,P1], freq_table[,P3b], freq_table[,P3a])
-BABA_1_3b_3a = baba(freq_table[,P1], freq_table[,P3b], freq_table[,P3a])
+#removing NA values
+admx_table2<-admx_table
+admx_table<-na.omit(admx_table2)
+
+ABBA_1_2_3a = abba(admx_table[,P1], admx_table[,P2], admx_table[,P3a])
+BABA_1_2_3a = baba(admx_table[,P1], admx_table[,P2], admx_table[,P3a])
+
+ABBA_1_3b_3a = abba(admx_table[,P1], admx_table[,P3b], admx_table[,P3a])
+BABA_1_3b_3a = baba(admx_table[,P1], admx_table[,P3b], admx_table[,P3a])
 
 f = (sum(ABBA_1_2_3a) - sum(BABA_1_2_3a))/
      (sum(ABBA_1_3b_3a) - sum(BABA_1_3b_3a))
