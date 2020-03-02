@@ -23,7 +23,7 @@ freq_table = read.table(paste0(inputfile), header=T, as.is=T)
 freq_table2<-freq_table
 freq_table<-na.omit(freq_table2)
 
-D <- D.stat(freq_table[,P1], freq_table[,P2], freq_table[,P3])
+D <- D.stat(freq_table[,"P1"], freq_table[,"P2"], freq_table[,"P3"])
 
 cat(paste("D =", round(D,4)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 
@@ -61,11 +61,11 @@ admx_table = read.table(paste0(inputadmx), header=T, as.is=T)
 admx_table2<-admx_table
 admx_table<-na.omit(admx_table2)
 
-ABBA_1_2_3a = abba(admx_table[,P1], admx_table[,P2], admx_table[,P3a])
-BABA_1_2_3a = baba(admx_table[,P1], admx_table[,P2], admx_table[,P3a])
+ABBA_1_2_3a = abba(admx_table[,"P1"], admx_table[,"P2"], admx_table[,"P3a"])
+BABA_1_2_3a = baba(admx_table[,"P1"], admx_table[,"P2"], admx_table[,"P3a"])
 
-ABBA_1_3b_3a = abba(admx_table[,P1], admx_table[,P3b], admx_table[,P3a])
-BABA_1_3b_3a = baba(admx_table[,P1], admx_table[,P3b], admx_table[,P3a])
+ABBA_1_3b_3a = abba(admx_table[,"P1"], admx_table[,"P3b"], admx_table[,"P3a"])
+BABA_1_3b_3a = baba(admx_table[,"P1"], admx_table[,"P3b"], admx_table[,"P3a"])
 
 f = (sum(ABBA_1_2_3a) - sum(BABA_1_2_3a))/
      (sum(ABBA_1_3b_3a) - sum(BABA_1_3b_3a))
