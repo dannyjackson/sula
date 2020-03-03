@@ -39,7 +39,7 @@ cat(paste("Genome divided into", n_blocks, "blocks."),file=paste0(outputdirector
 
 D_sd <- get_jackknife_sd(block_indices=block_indices,
                          FUN=D.stat,
-                         freq_table[,P1], freq_table[,P2], freq_table[,P3])
+                         freq_table[,"P1"], freq_table[,"P2"], freq_table[,"P3"])
 
 cat(paste("D standard deviation = ", round(D_sd,4)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 
