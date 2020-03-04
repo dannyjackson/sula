@@ -61,13 +61,18 @@ admx_table = read.table(paste0(inputadmx), header=T, as.is=T)
 admx_table2<-admx_table
 admx_table<-na.omit(admx_table2)
 
-ABBA_1_2_3a = abba(admx_table[,"P1"], admx_table[,"P2"], admx_table[,"P3a"])
-BABA_1_2_3a = baba(admx_table[,"P1"], admx_table[,"P2"], admx_table[,"P3a"])
+f.stat <- function(p1, p2, p3a, p3b) {
+    ABBA_numerator <- (1 - p1) * p2 * p3a
+    BABA_numerator <- p1 * (1 - p2) * p3a
 
-ABBA_1_3b_3a = abba(admx_table[,"P1"], admx_table[,"P3b"], admx_table[,"P3a"])
-BABA_1_3b_3a = baba(admx_table[,"P1"], admx_table[,"P3b"], admx_table[,"P3a"])
+    ABBA_denominator <- (1 - p1) * p3b * p3a
+    BABA_denominator <- p1 * (1 - p3b) * p3a
 
-f = (sum(ABBA_1_2_3a) - sum(BABA_1_2_3a))/
-     (sum(ABBA_1_3b_3a) - sum(BABA_1_3b_3a))
+    (sum(ABBA_numerator) - sum(BABA_numerator)) /
+    (sum(ABBA_denominator) - sum(BABA_denominator))
+    }
+
+f <- f.stat(admx_table[,"P1"], admx_table[,"P2"], admx_table[,"P3a"], admx_table[,"P3b"])
+
 
 cat(paste("Admixture proportion (f value) = ", round(f,3)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
