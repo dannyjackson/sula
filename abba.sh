@@ -90,6 +90,12 @@ if [ $# -lt 1 ]
 
 
 
+
+
+
+
+
+
     if [ ${path_to_vcf_file: -3} = "vcf" ] || [ ${path_to_vcf_file: -6} = "vcf.gz" ]
       then
         python $simonhmartin_directory/ABBABABAwindows.py \
@@ -104,7 +110,7 @@ if [ $# -lt 1 ]
         python $simonhmartin_directory/ABBABABAwindows.py \
         -g $path_to_vcf_file -f phased \
         -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
-        -P1 ${population1} -P2 ${population2} -P3 ${population3} -O ${populationoutgroup} \
+        $pops \
         --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
     fi
 

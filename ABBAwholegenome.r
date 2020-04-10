@@ -61,6 +61,31 @@ admx_table = read.table(paste0(inputadmx), header=T, as.is=T)
 admx_table2<-admx_table
 admx_table<-na.omit(admx_table2)
 
+
+block_indices <- get_block_indices(block_size=1e6,
+                                   positions=admx_table$position,
+                                   chromosomes=admx_table$scaffold)
+
+n_blocks <- length(block_indices)
+
+cat(paste("Genome divided into", n_blocks, "blocks."),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
+
+D_err <- D_sd/sqrt(n_blocks)
+D_Z <- D / D_err
+D_p <- 2*pnorm(-abs(D_Z))
+
+cat(paste("D Z score = ", round(D_Z,3)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
+cat(paste("D p value = ", round(D_p,3)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
+
+
+
+
+
+
+
 f.stat <- function(p1, p2, p3a, p3b) {
     ABBA_numerator <- (1 - p1) * p2 * p3a
     BABA_numerator <- p1 * (1 - p2) * p3a
@@ -76,3 +101,16 @@ f <- f.stat(admx_table[,"P1"], admx_table[,"P2"], admx_table[,"P3a"], admx_table
 
 
 cat(paste("Admixture proportion (f value) = ", round(f,3)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
+
+f_sd <- get_jackknife_sd(block_indices=block_indices,
+                         FUN=f.stat,
+                         admx_table[,"P1"], admx_table[,"P2"], admx_table[,"P3a"], admx_table[,"P3b"])
+
+
+f_err <- f_sd/sqrt(n_blocks)
+
+f_CI_lower <- f - 1.96*f_err
+f_CI_upper <- f + 1.96*f_err
+
+print(paste("95% confidence interval of f =", round(f_CI_lower,4), round(f_CI_upper,4)))
