@@ -113,4 +113,6 @@ f_err <- f_sd/sqrt(n_blocks)
 f_CI_lower <- f - 1.96*f_err
 f_CI_upper <- f + 1.96*f_err
 
-print(paste("95% confidence interval of f =", round(f_CI_lower,4), round(f_CI_upper,4)))
+cat(paste("95% confidence interval of f =", round(f_CI_lower,4), round(f_CI_upper,4)), file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
+cat(paste("f err =", round(f_err,4)), file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
