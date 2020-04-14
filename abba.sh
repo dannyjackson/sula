@@ -115,5 +115,5 @@ if [ $# -lt 1 ]
     fi
 
 
-    python $simonhmartin_directory/ABBABABAwindows.py -g data/${output_directory}/${project_name}.geno.gz -f phased -o -o ${output_directory}/${project_name}.w50m1s10.csv.gz -P1 flo -P2 txn -P3 ama -O slv --popsFile data/bar92.pop.txt -w 50000 -m 1000 -s 20000 --minData 0.5 --T 2
+    python $simonhmartin_directory/ABBABABAwindows.py -g data/${output_directory}/${project_name}.geno.gz -f phased -o ${output_directory}/${project_name}.w50m1s10.csv.gz -P1 flo -P2 txn -P3 ama -O slv --popsFile data/bar92.pop.txt -w 50000 -m 1000 -s 20000 --minData 0.5 --T 2
 fi
