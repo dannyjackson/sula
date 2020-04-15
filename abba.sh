@@ -101,7 +101,7 @@ if [ $# -lt 1 ]
         python $simonhmartin_directory/ABBABABAwindows.py \
         -g ${output_directory}/${project_name}.geno.gz -f phased \
         -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
-        -P1 ${population1} -P2 ${population2} -P3 ${population3} -O ${populationoutgroup} \
+        P1 P1 -P2 P2 -P3 P3 -O P4  \
         --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
     fi
 
@@ -110,7 +110,7 @@ if [ $# -lt 1 ]
         python $simonhmartin_directory/ABBABABAwindows.py \
         -g $path_to_vcf_file -f phased \
         -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
-        $pops \
+        P1 P1 -P2 P2 -P3 P3 -O P4  \
         --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
     fi
 
