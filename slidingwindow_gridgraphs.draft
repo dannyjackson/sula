@@ -1,0 +1,44 @@
+#Plots a grid of graphs featuring sliding window values by scaffold
+
+AB_files <- c("scaffolds_slidingwindows.csv")
+AB_tables = lapply(AB_files, read.csv)
+head(AB_tables[[1]])
+
+#convert all fd values to 0 at sites where D is negative
+for (x in 1:length(AB_tables)){
+AB_tables[[x]]$fd = ifelse(AB_tables[[x]]$D < 0, 0, AB_tables[[x]]$fd)
+    }
+df <- data.frame(AB_tables)
+install.packages("tidyverse")
+
+library(tidyverse)
+
+
+# fd values
+ggplot(data = df, mapping = aes(x = mid, y = fd)) + ylim(0, 1.5) +
+    geom_hline(yintercept=0) + geom_vline(xintercept=0) +
+    facet_wrap(facets = vars(scaffold)) +
+    geom_point(aes(colour=cut(fd, c(-Inf, 0, 0.25, 0.5, 0.75, Inf))),size=1) +
+    scale_color_manual(name="fd",
+      values = c("(-Inf,0]" = "light gray",
+              "(0,0.25]" = "deepskyblue1",
+              "(0.25,0.5]" = "deepskyblue3",
+              "(0.5,0.75]" = "blue",
+              "(0.75, Inf]" = "deeppink1")) +
+              theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                           panel.background = element_rect(fill = 'white', colour = 'white'))
+
+
+# D values
+ggplot(data = df, mapping = aes(x = mid, y = D)) +
+    geom_hline(yintercept=0) + geom_vline(xintercept=0) +
+    facet_wrap(facets = vars(scaffold)) +
+    geom_point(aes(colour=cut(fd, c(-Inf, 0, 0.25, 0.5, 0.75, Inf))),size=1) +
+    scale_color_manual(name="fd",
+      values = c("(-Inf,0]" = "light gray",
+              "(0,0.25]" = "deepskyblue1",
+              "(0.25,0.5]" = "deepskyblue3",
+              "(0.5,0.75]" = "blue",
+              "(0.75, Inf]" = "deeppink1")) +
+              theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                           panel.background = element_rect(fill = 'white', colour = 'white'))

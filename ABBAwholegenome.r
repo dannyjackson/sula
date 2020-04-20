@@ -107,6 +107,8 @@ f_sd <- get_jackknife_sd(block_indices=block_indices,
                          FUN=f.stat,
                          admx_table[,"P1"], admx_table[,"P2"], admx_table[,"P3a"], admx_table[,"P3b"])
 
+cat(paste("Admixture proportion (f value) = ", round(f,3)),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+
 
 f_err <- f_sd/sqrt(n_blocks)
 
