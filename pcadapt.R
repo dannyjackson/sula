@@ -3,17 +3,22 @@
 
 args = commandArgs()
 num_k = substr(args[grep("num_k_", args)],7,100000)
+num_k = 9
 
 library(pcadapt)
 
 path_to_file <- "plink.bed"
 filename <- read.pcadapt(path_to_file, type = "bed")
-x <- pcadapt(input = filename, K = paste0(num_k))
+x <- pcadapt(input = filename, K = num_k)
+
+
 
 # With integers
-poplist.int <- c(rep(1, 5), rep(2, 5))
+poplist.int <- c(rep(BFBO, 5), rep(PEBO, 5))
 
-pdf(file = "pcall.pdf", width = 10, height = 10, useDingbats=FALSE)
+# create a scree plot to determine the actual number of K)
+
+pdf(file = "scree.pdf", width = 10, height = 10, useDingbats=FALSE)
   plot(x, option = "screeplot", pop = poplist.int)
     dev.off()
 
