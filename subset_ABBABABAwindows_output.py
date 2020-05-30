@@ -7,8 +7,8 @@ threshold = sys.argv[2]
 outputList = open(project_name, "a")
 
 with gzip.open(file) as f:
+    next(f)
     line = f.readline()
-    next(line)
     while line:
 
         fdstat = line.split(",")[12]
