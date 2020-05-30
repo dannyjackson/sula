@@ -89,31 +89,23 @@ if [ $# -lt 1 ]
     Rscript ${github_directory}/ABBAwholegenome.r inputfile_${output_directory}/${project_name}.geno.tsv inputadmx_${output_directory}/${project_name}.admx.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory project_name_$project_name
 
 
-
-
-
-
-
-
-
     if [ ${path_to_vcf_file: -3} = "vcf" ] || [ ${path_to_vcf_file: -6} = "vcf.gz" ]
-      then
-        python $simonhmartin_directory/ABBABABAwindows.py \
-        -g ${output_directory}/${project_name}.geno.gz -f phased \
-        -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
-        P1 P1 -P2 P2 -P3 P3 -O P4  \
-        --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
-    fi
+          then
+            python $simonhmartin_directory/fourPopWindows.py \
+            -g ${output_directory}/${project_name}.geno.gz -f phased \
+            -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
+            -P1 P1 -P2 P2 -P3 P3 -O P4 \
+            --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
+        fi
 
     if [ ${path_to_vcf_file: -4} =  "geno" ] || [ ${path_to_vcf_file: -7} = "geno.gz" ]
-      then
-        python $simonhmartin_directory/ABBABABAwindows.py \
-        -g $path_to_vcf_file -f phased \
-        -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
-        P1 P1 -P2 P2 -P3 P3 -O P4  \
-        --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
-    fi
-
+          then
+            python $simonhmartin_directory/fourPopWindows.py \
+            -g $path_to_vcf_file -f phased \
+            -o ${output_directory}/${project_name}_slidingwindows.csv.gz \
+            P1 P1 -P2 P2 -P3 P3 -O P4 \
+            --popsFile ${path_to_populations_file} -w ${windowsize} -m ${minimumsnps} --T ${threads}
+        fi
 
     python $simonhmartin_directory/ABBABABAwindows.py -g data/${output_directory}/${project_name}.geno.gz -f phased -o ${output_directory}/${project_name}.w50m1s10.csv.gz -P1 flo -P2 txn -P3 ama -O slv --popsFile data/bar92.pop.txt -w 50000 -m 1000 -s 20000 --minData 0.5 --T 2
 fi
