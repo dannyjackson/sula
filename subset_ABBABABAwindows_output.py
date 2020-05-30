@@ -9,7 +9,7 @@ outputList = open(project_name, "a")
 with gzip.open(file) as f:
     line = f.readline()
     while line:
-        fdstat = line.split(",")[9]
+        fdstat = line.split(",")[12]
         if ( fdstat == "fd" ):
             outputList.write(line)
         if ( fdstat != "fd" ):
