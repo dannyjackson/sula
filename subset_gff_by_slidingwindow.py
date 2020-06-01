@@ -1,5 +1,4 @@
 import sys
-import re
 
 file = sys.argv[1] + "_slidingwindows.subsetfd.txt"
 gff_file = sys.argv[2]
@@ -38,9 +37,6 @@ with open(gff_file) as g:
         if  wstart < gstart < wend or wstart < gend < wend:
             gffsubset.append(gline.split()[8].split("=")[3][1:][:-2])
       gline = g.readline()
-
-id = re.compile("*ID*")
-re.findall(id, gffsubset)
 
 with open(project_name + "genelist.txt","w") as file:
     file.writelines('%s\n' % item for item in gffsubset)
