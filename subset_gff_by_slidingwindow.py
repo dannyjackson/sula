@@ -2,7 +2,7 @@ import sys
 
 file = sys.argv[1] + "_slidingwindows.subsetfd.txt"
 gff_file = sys.argv[2]
-project_name = sys.argv[1] + "_genelist.txt"
+project_name = sys.argv[1]
 
 outputList = open(project_name, "a")
 
