@@ -1,6 +1,6 @@
 #Plots a grid of graphs featuring sliding window values by scaffold
 
-AB_files <- c("scaffolds_slidingwindows.csv")
+AB_files <- c("MaMaNaRf_500kb_slidingwindows.csv.gz")
 AB_tables = lapply(AB_files, read.csv)
 head(AB_tables[[1]])
 
