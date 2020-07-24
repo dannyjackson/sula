@@ -74,7 +74,7 @@ Dol.stat <- function(p1, p2, p3, p4) {
     }
 
 
-freq_table = read.table("PePeBfBfRf.geno.tsv", header=T, as.is=T)
+freq_table = read.table("mabo.geno.tsv", header=T, as.is=T)
 
 #removing NA values
 freq_table2<-freq_table
