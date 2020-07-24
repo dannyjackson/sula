@@ -17,7 +17,7 @@ D.stat <- function(p1, p2, p3) {
 
 freq_table = read.table(paste0(inputfile), header=T, as.is=T)
 
-populations = read.table("abbapops.txt", header=T, as.is=T)
+populations = read.table("abbapops_3.txt", header=T, as.is=T)
 
 #removing NA values
 freq_table2<-freq_table
