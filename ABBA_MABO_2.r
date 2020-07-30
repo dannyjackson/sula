@@ -33,8 +33,6 @@ n_blocks <- length(block_indices)
 
 cat(paste("Genome divided into", n_blocks, "blocks."),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 
-cat(paste("D", "D_sd", "D_Z", "D_p", sep="\t"), file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
-
 for (row in 1:nrow(populations)){
   P1 <- populations[row, "P1"]
   P2 <- populations[row, "P2"]

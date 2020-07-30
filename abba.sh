@@ -35,3 +35,4 @@ if [ $# -lt 1 ]
     -o $output_directory/$project_name.admx.geno.tsv
 
     Rscript ${github_directory}/ABBAwholegenome.r inputfile_${output_directory}/${project_name}.geno.tsv inputadmx_${output_directory}/${project_name}.admx.geno.tsv outputdirectory_$output_directory simonhmartin_directory_$simonhmartin_directory project_name_$project_name
+fi 

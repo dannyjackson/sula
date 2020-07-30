@@ -3,11 +3,11 @@
 
 args = commandArgs()
 
-inputfile = substr(args[grep("inputfile_", args)],11,100000)
-outputdirectory = substr(args[grep("outputdirectory_", args)],17,100000)
-simonhmartin_directory = substr(args[grep("simonhmartin_directory_", args)],24,100000)
-project_name = substr(args[grep("project_name_", args)],14,100000)
-inputpops = substr(args[grep("inputpops_", args)],11,100000)
+inputfile = "rfbo.geno.tsv"
+outputdirectory = "/data5/sulidae/final/abba/rfbo/"
+simonhmartin_directory = "~/genomics_general-master/"
+project_name = "rfbo"
+inputpops = "abbapops.txt"
 
 D.stat <- function(p1, p2, p3) {
     ABBA <- (1 - p1) * p2 * p3
@@ -33,7 +33,7 @@ n_blocks <- length(block_indices)
 
 cat(paste("Genome divided into", n_blocks, "blocks."),file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 
-cat(paste(D,D_sd,D_Z,D_p,sep="\t")), file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+cat(paste("D", "D_sd", "D_Z", "D_p", sep="\t"), file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 
 for (row in 1:nrow(populations)){
   P1 <- populations[row, "P1"]
@@ -49,5 +49,5 @@ for (row in 1:nrow(populations)){
   D_Z <- D / D_err
   D_p <- 2*pnorm(-abs(D_Z))
 
-  cat(paste(P1,P2,P3,round(D,4)), round(D_sd,4)), round(D_Z,3), round(D_p,3), sep="\t"), file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
+  cat(paste(P1,P2,P3,round(D,4), round(D_sd,4), round(D_Z,3), round(D_p,3), sep="\t"), file=paste0(outputdirectory,"/",project_name,".abbawholegenome.stats.txt"),sep="\n",append=TRUE)
 }
