@@ -14,6 +14,6 @@ fstsubset<-fst[complete.cases(fst),]
 SNP<-c(1: (nrow(fstsubset)))
 mydf<-data.frame(SNP,fstsubset)
 
-pdf(file = paste0(outDir,"/",name,".pdf"), width = 20, height = 7, useDingbats=FALSE)
+pdf(file = paste0("bfbo_pebo.pdf"), width = 20, height = 7, useDingbats=FALSE)
 print(manhattan(mydf,chr="CHROM",bp="BIN_START",p="WEIGHTED_FST",snp="SNP",logp=FALSE,ylab="Weighted Weir and Cockerham Fst",cex = 0.2))
 dev.off()
