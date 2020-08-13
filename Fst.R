@@ -9,11 +9,11 @@ outDir <- args[7]
 name <- args[8]
 
 library(qqman)
-fst<-read.table(paste0("/data5/sulidae/final/fst/bfbo_pebo/fst_snps.weir.fst"), header=TRUE)
+fst<-read.table(paste0("trimmed.fst.txt"), header=TRUE)
 fstsubset<-fst[complete.cases(fst),]
 SNP<-c(1: (nrow(fstsubset)))
 mydf<-data.frame(SNP,fstsubset)
 
-pdf(file = paste0("bfbo_pebo.pdf"), width = 20, height = 7, useDingbats=FALSE)
-print(manhattan(mydf,chr="CHROM",bp="BIN_START",p="WEIGHTED_FST",snp="SNP",logp=FALSE,ylab="Weighted Weir and Cockerham Fst",cex = 0.2))
+pdf(file = paste0("trimmed.pdf"), width = 20, height = 7, useDingbats=FALSE)
+print(manhattan(mydf,chr="CHROM",bp="BIN_START",p="WEIGHTED_FST",snp="SNP",logp=FALSE,ylab="Weighted Weir and Cockerham Fst",cex = 0.5))
 dev.off()
