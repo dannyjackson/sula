@@ -54,7 +54,8 @@ fai_file = pd.read_csv("/data5/sulidae/reference_datasets/Phalacrocorax_noC.fa.f
 fixed_file = pd.read_csv("fixed.fst.txt",sep="\t", header=None)
 
 fixed_file = fixed_file.drop([2],axis=1)
-fixed_dict = fixed_file.to_dict()
+
+if fixed_file[]
 
 
 
