@@ -1,7 +1,7 @@
 # A script to drop fst data from scaffolds below 5k:
 
-fai_file = "/data5/sulidae/reference_datasets/Phalacrocorax_noC.fa.fai"
-fst_file = "fst_25k.windowed.weir.fst"
+fai_file = "/home/daja5529/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna.fai"
+fst_file = "fst_10k.windowed.weir.fst"
 
 fai_subset = []
 final = []
@@ -10,7 +10,7 @@ final = []
 with open(fai_file) as f:
   for column in f:
     if float(column.split("\t")[1]) > 100000 :
-      fai_subset.append((column.split("\t")[0].split("caffold")[1]))
+      fai_subset.append((column.split("\t")[0].split("NEVG0")[1]))
 
 with open (fst_file) as f:
   for item in f:
