@@ -24,6 +24,50 @@ for i in sequence:
         break
     if site is 'Y' and 'T' in unique_alleles:
         break
+    if site is 'R' and 'A' in unique_alleles:
+        break
+    if site is 'R' and 'G' in unique_alleles:
+        break
+    if site is 'W' and 'A' in unique_alleles:
+        break
+    if site is 'W' and 'T' in unique_alleles:
+        break
+    if site is 'S' and 'G' in unique_alleles:
+        break
+    if site is 'S' and 'C' in unique_alleles:
+        break
+    if site is 'K' and 'T' in unique_alleles:
+        break
+    if site is 'K' and 'G' in unique_alleles:
+        break
+    if site is 'M' and 'C' in unique_alleles:
+        break
+    if site is 'M' and 'A' in unique_alleles:
+        break
+    if site is 'D' and 'A' in unique_alleles:
+        break
+    if site is 'D' and 'G' in unique_alleles:
+        break
+    if site is 'D' and 'T' in unique_alleles:
+        break
+    if site is 'V' and 'A' in unique_alleles:
+        break
+    if site is 'V' and 'C' in unique_alleles:
+        break
+    if site is 'V' and 'G' in unique_alleles:
+        break
+    if site is 'H' and 'A' in unique_alleles:
+        break
+    if site is 'H' and 'C' in unique_alleles:
+        break
+    if site is 'H' and 'T' in unique_alleles:
+        break
+    if site is 'B' and 'C' in unique_alleles:
+        break
+    if site is 'B' and 'G' in unique_alleles:
+        break
+    if site is 'B' and 'T' in unique_alleles:
+        break
     if site not in unique_alleles:
       unique_alleles.add(site)
     if len(unique_alleles) > 2:
