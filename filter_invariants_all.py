@@ -15,6 +15,7 @@ sequence = list(range(0,len(code[0])))
 
 variant_sites = set()
 unique_alleles = set('N')
+unambiguous = set('ATCG')
 
 for i in sequence:
   allele_column = [l[i] for l in code]
@@ -68,8 +69,9 @@ for i in sequence:
         break
     if site is 'B' and 'T' in unique_alleles:
         break
-    if site not in unique_alleles:
-      unique_alleles.add(site)
+    if site in unambiguous:
+        if site not in unique_alleles:
+            unique_alleles.add(site)
     if len(unique_alleles) > 2:
       variant_sites.add(i)
 
