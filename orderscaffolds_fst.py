@@ -16,4 +16,4 @@ df = pd.read_csv(sys.argv[1], sep='\t')
 
 df['CHROM'] = df['CHROM'].map(inv_d)
 
-df.to_csv(sys.argv[1],index=False)
+df.to_csv(sys.argv[1],sep='\t', index=False)
