@@ -1,51 +1,49 @@
-Sulidae Master Script
+# Command line scripts for all analyses in the paper, "Evidence from whole genomes for interspecific introgression and pantropical gene flow in boobies, a genus of tropical seabirds"
+=
+The files trim-and-QC.sh and align-and-sort.sh can be found here: https://github.com/erikrfunk/whole_genome_bioinformatics/ (thanks Erik for the useful scripts!)
 
-~/whole_genome_bioinformatics/trim-and-QC.sh -i /data5/sulafilenames.txt -p /data5/ -f R1_001.fastq.gz -r R2_001.fastq.gz -a /data5/NexteraPE-PE.fa -t 12
-#important settings: ILLUMINACLIP:$adapters:1:30:10 LEADING:20 TRAILING:20 SLIDINGWINDOW:4:20 MINLEN:90
+    ~/whole_genome_bioinformatics/trim-and-QC.sh -i /data5/sulafilenames.txt -p /data5/ -f R1_001.fastq.gz -r R2_001.fastq.gz -a /data5/NexteraPE-PE.fa -t 12
 
-align-and-sort.sh -i /data5/sulidae/reference_lists/sulafilenames.txt -r ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -t 12 -p /data5/sulidae/my_datasets/trimming_step/fastqs/ -b bam_files_flightless -s sorted_bam_files_flightless
+Important settings within the script: ILLUMINACLIP:$adapters:1:30:10 LEADING:20 TRAILING:20 SLIDINGWINDOW:4:20 MINLEN:90
 
-ref="~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna"
-bamdir="/data5/sulidae/my_datasets/sorted_bam_files/"
-ID="sula_flightless"
-/usr/bin/bcftools mpileup -Ou -f "$ref" -a FORMAT/AD,DP,INFO/AD,SP "$bamdir"*_sorted_RGadded_dupmarked.bam | /usr/bin/bcftools call -mv -V indels > "$ID"_snps_multiallelic.vcf
+    align-and-sort.sh -i /data5/sulidae/reference_lists/sulafilenames.txt -r ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -t 12 -p /data5/sulidae/my_datasets/trimming_step/fastqs/ -b bam_files_flightless -s sorted_bam_files_flightless
 
-awk '{gsub("RFBO_PAL_63", "RFBO101"); print}' sula_flightless_snps_multiallelic.vcf > sula_flightless.vcf
+    ref="~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna"
+    bamdir="/data5/sulidae/my_datasets/sorted_bam_files/"
+    ID="sula_flightless"
+    /usr/bin/bcftools mpileup -Ou -f "$ref" -a FORMAT/AD,DP,INFO/AD,SP "$bamdir"*_sorted_RGadded_dupmarked.bam | /usr/bin/bcftools call -mv -V indels > "$ID"_snps_multiallelic.vcf
 
-awk '{print $1"_"$2}' sula_flightless.vcf | grep -v '#' > locinames.txt
-grep -v '#' sula_flightless.vcf > temp.vcf
-awk -F "\t" 'FNR==NR{a[NR]=$1;next}{$3=a[FNR]}1' locinames.txt temp.vcf > newfile.vcf
-tr ' ' '\t' < newfile.vcf 1<> newfile.vcf
-grep '#' sula_flightless.vcf > sula_flightless_ID.vcf
-cat newfile.vcf >> sula_flightless_ID.vcf
+    awk '{gsub("RFBO_PAL_63", "RFBO101"); print}' sula_flightless_snps_multiallelic.vcf > sula_flightless.vcf
+
+    awk '{print $1"_"$2}' sula_flightless.vcf | grep -v '#' > locinames.txt
+    grep -v '#' sula_flightless.vcf > temp.vcf
+    awk -F "\t" 'FNR==NR{a[NR]=$1;next}{$3=a[FNR]}1' locinames.txt temp.vcf > newfile.vcf
+    tr ' ' '\t' < newfile.vcf 1<> newfile.vcf
+    grep '#' sula_flightless.vcf > sula_flightless_ID.vcf
+    cat newfile.vcf >> sula_flightless_ID.vcf
 
 # generate summary statistics
 
-~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_ID.vcf --allow-extra-chr --missing --cluster-missing --freq
+    ~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_ID.vcf --allow-extra-chr --missing --cluster-missing --freq
 
-~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_ID.vcf --allow-extra-chr --missing --cluster missing --within cluster_species.txt --freq
+    ~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_ID.vcf --allow-extra-chr --missing --cluster missing --within cluster_species.txt --freq
 
-~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_ID.vcf --allow-extra-chr --missing --cluster missing --within cluster_pop.txt --freq
+    ~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_ID.vcf --allow-extra-chr --missing --cluster missing --within cluster_pop.txt --freq
 
 # filter the vcf
 
-#filters by quality
-bcftools view -i 'QUAL>100' sula_flightless_ID.vcf > sula_flightless_qualitysort.vcf
+    #filters by quality
+    bcftools view -i 'QUAL>100' sula_flightless_ID.vcf > sula_flightless_qualitysort.vcf
 
-#filters by depth and removes indels
-vcftools --vcf sula_flightless_qualitysort.vcf --min-meanDP 2 --max-meanDP 8 --remove-indels --recode --out sula_flightless_filtered
+    #filters by depth and removes indels
+    vcftools --vcf sula_flightless_qualitysort.vcf --min-meanDP 2 --max-meanDP 8 --remove-indels --recode --out sula_flightless_filtered
 
-~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf --allow-extra-chr --snps-only 'just-acgt' --geno 0.02 --mind 0.2 --maf 0.01 --recode vcf-iid --out sula_flightless_flightless_mind2
+    ~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf --allow-extra-chr --snps-only 'just-acgt' --geno 0.02 --mind 0.2 --maf 0.01 --recode vcf-iid --out sula_flightless_flightless_mind2
 
-#Note that the vcf is significantly reduced by the maf 0.01 command. Consider leaving this off for any analyses that don't require it (I think only RAxML requires it?)
-
-
-~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf --allow-extra-chr --snps-only 'just-acgt' --geno 0.02 --mind 0.1 --maf 0.01 --recode vcf-iid --out sula_flightless_cleaned
+#Note that the vcf is significantly reduced by the maf 0.01 command. Leave this off for any analyses that don't require it (only RAxML requires it)
 
 
-
-
-
+    ~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf --allow-extra-chr --snps-only 'just-acgt' --geno 0.02 --mind 0.1 --maf 0.01 --recode vcf-iid --out sula_flightless_cleaned
 
 
 
@@ -72,84 +70,7 @@ bcftools index sula_flightless_cleaned_zip.vcf.gz
 
 
 
-
-# generate population statistics
-
-echo -e "MABO301" >> mabo.txt
-echo -e "MABO302" >> mabo.txt
-echo -e "MABO304" >> mabo.txt
-echo -e "MABO305" >> mabo.txt
-echo -e "MABO306" >> mabo.txt
-
-echo -e "NABO402" >> nabo.txt
-echo -e "NABO403" >> nabo.txt
-echo -e "NABO404" >> nabo.txt
-echo -e "NABO405" >> nabo.txt
-echo -e "NABO406" >> nabo.txt
-
-
-vcftools --vcf /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf --weir-fst-pop mabo.txt --weir-fst-pop nabo.txt --out mabo_vs_nabo
-
-
-echo -e "MABO302" >> mabo_indopac.txt
-echo -e "MABO306" >> mabo_indopac.txt
-
-echo -e "MABO304" >> mabo_atlcar.txt
-echo -e "MABO305" >> mabo_atlcar.txt
-
-
-vcftools --vcf /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf --weir-fst-pop mabo_atlcar.txt --weir-fst-pop mabo_indopac.txt --out mabo_vs_mabo
-
-
-
-echo -e "BFBO501" >> bfbo.txt
-echo -e "BFBO502" >> bfbo.txt
-echo -e "BFBO503" >> bfbo.txt
-echo -e "BFBO504" >> bfbo.txt
-echo -e "BFBO505" >> bfbo.txt
-
-
-echo -e "PEBO601" >> pebo.txt
-echo -e "PEBO603" >> pebo.txt
-echo -e "PEBO604" >> pebo.txt
-echo -e "PEBO605" >> pebo.txt
-echo -e "PEBO606" >> pebo.txt
-
-
-vcftools --vcf /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf --weir-fst-pop bfbo.txt --weir-fst-pop pebo.txt --out bfbo_vs_pebo
-
-
-echo -e "BRBO201" >> brbo_p.txt
-echo -e "BRBO202" >> brbo_p.txt
-
-
-echo -e "BRBO203" >> brbo_a.txt
-echo -e "BRBO205" >> brbo_a.txt
-
-
-
-vcftools --vcf /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf --weir-fst-pop brbo_p.txt --weir-fst-pop brbo_a.txt --out brboa_brbop
-
-
-
-# get just fixed sites from vcftools output
-
-grep -E "(^|\s)1(\s|$)" bfbo_vs_pebo.weir.fst > bfbo_vs_pebo.fixed
-
-grep -E "(^|\s)1(\s|$)" mabo_vs_nabo.weir.fst > mabo_vs_nabo.fixed
-
-grep -E "(^|\s)1(\s|$)" mabo_vs_mabo.weir.fst > mabo_vs_mabo.fixed
-
-
 # run RAxML
-
-
-# all individuals included
-
-~/vcf2phylip/vcf2phylip.py -i sula_flightless_cleaned_all.vcf
-python ~/sula/filter_invariants_.py sula_flightless_cleaned_all.min4.phy
-
-
 
 # pruned samples
 
@@ -174,76 +95,15 @@ raxmlHPC -m ASC_GTRCAT --asc-corr felsenstein -f d -d -k -n sula_flightless_b -q
 # added in -f d
 raxmlHPC ­-f a -x 12345 -p 12345 -# 1000 -n sula_flightless -m ASC_GTRCAT --asc-corr felsenstein -s /data5/sulidae/my_datasets/variantsites_mind2.phy -q /data5/sulidae/final/to_flightless/raxml/partition_file.txt -T 6
 
-raxmlHPC -f b -m PROTGAMMAILG -n sula.tre -t RAxML_bestTree.sula_flightless_b -z  RAxML_bootstrap.sula_flightless
-
-  # ASC specifies that it needs to correct for ascertainment bias (SNPs/invariant sites) and the GTRGAMMA specifies that I want a General Time Reversible model with optimization of substitution rates under the GAMMA model of rate heterogeneity
-  # -d starts ML optimization from a random starting tree, instead of the default randomized stepwise addition Maximum Parsimony starting tree,which the manual states "sometimes yields better - more diverse - starting trees for the analysis of broad phylogenomic alignments that have a very strong phylogenetic signal"
-
-  #-f k addresses the issue of very long branch lengths in partitioned datasets with missing data by stealing branch lengths from those partitions that have data on both sides of the branch under consideration. If there are several other partitions that have data it computes a weighted average for the stolen branch length based on the site counts in each partition from which it stole a branch length. The nice property of this algorithm is that by changing the branch lengths in this way, the likelihood of the tree is not changed.
-
-  # -J STRICT computes a strict consensus tree
-
-  # -k specifies that bootstrapped trees should be printed with branch lengths
-
-  # -n specifies the name of the output file
-
-  # -q path to partition file. Specifies regions of alignment for which an individual model of nucleotide substitution should be estimated.
-
-
-/data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf
 
 
 ~/vcf2phylip/vcf2phylip.py -i /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf
 
 python ~/sula/filter_invariants.py sula_flightless_cleaned_all.min4.phy
 
-raxmlHPC -m ASC_GTRCAT --asc-corr felsenstein -f d -d -k -n sula_flightless_b -q /data5/sulidae/my_datasets/partition_file.txt -s /data5/sulidae/my_datasets/variantsites.phy -T 6 -p 12345 -N 10 ­-b 12345 -V
 
 
 
-
-
-
-
-# SVDQuartets
-
-# all individuals
-# Convert vcf to nexus file
-git clone https://github.com/ODiogoSilva/ElConcatenero.git
-
-python ElConcatenero/ElConcatenero.py -if phylip -of nexus -in variantsites_mind2.phy -o variantsites_mind2.nex
-
-
-sed 's/datatype=mixed ()/datatype=dna/g' /data5/sulidae/my_datasets/variantsites_mind2.nex > test.nex
-mv test.nex /data5/sulidae/my_datasets/variantsites_mind2.nex
-
-
-~/programs/whole_genome_bioinformatics/paup4a166_ubuntu64
-
-exe /data5/sulidae/my_datasets/variantsites_mind2.nex
-SVDQuartets nquartets=500000 nreps=200 bootstrap=standard treeFile=sula.tre
-contree all /strict=yes saveSupport=Both treefile=sulaconsensus_strict.tre;
-contree / strict=no majrule=yes treefile=sulamajrule_con.tree;
-
-SVDQuartets nquartets=500000 nreps=10000 bootstrap=standard treeFile=sula_10kreps.tre
-contree all /strict=yes saveSupport=Both treefile=sulaconsensus_strict_10kreps.tre;
-contree / strict=no majrule=yes treefile=sulamajrule_con_10kreps.tree;
-
-# pruned individuals
-
-# Convert vcf to nexus file
-python ElConcatenero/ElConcatenero.py -if phylip -of nexus -in ../../variantsites_mind2.phy -o variantsites_mind2
-
-sed -r 's/mixed [(][)]/DNA/g' variantsites_mind2.nex > new.nex
-mv new.nex variantsites_mind2.nex
-
-
-~/programs/whole_genome_bioinformatics/paup4a166_ubuntu64
-
-exe variantsites_mind2.nex
-SVDQuartets nquartets=500000 nreps=200 bootstrap=standard treeFile=sula.tre
-contree all /strict=yes saveSupport=Both treefile=sulaconsensus_strict_mind2.tre;
-contree / strict=no majrule=yes treefile=sulamajrule_con_mind2.tree;
 
 
 
@@ -265,7 +125,6 @@ echo -e "BFBO504\tP1" > pops.txt
 echo -e "BFBO502\tP2" >> pops.txt
 echo -e "BFBO503\tP2" >> pops.txt
 echo -e "PEBO601\tP3" >> pops.txt
-echo -e "PEBO602\tP3" >> pops.txt
 echo -e "PEBO603\tP3" >> pops.txt
 echo -e "PEBO604\tP3" >> pops.txt
 echo -e "PEBO605\tP3" >> pops.txt
@@ -277,25 +136,9 @@ echo -e "RFBO104\tP4" >> pops.txt
 echo -e "RFBO105\tP4" >> pops.txt
 echo -e "RFBO106\tP4" >> pops.txt
 
-echo -e "BFBO504\tP1" > pops_admx.txt
-echo -e "BFBO502\tP2" >> pops_admx.txt
-echo -e "BFBO503\tP2" >> pops_admx.txt
-echo -e "PEBO603\tP3a" >> pops_admx.txt
-echo -e "PEBO604\tP3b" >> pops_admx.txt
-echo -e "PEBO602\tP3b" >> pops_admx.txt
-echo -e "PEBO606\tP3b" >> pops_admx.txt
-echo -e "RFBO101\tP4" >> pops_admx.txt
-echo -e "RFBO102\tP4" >> pops_admx.txt
-echo -e "RFBO103\tP4" >> pops_admx.txt
-echo -e "RFBO104\tP4" >> pops_admx.txt
-echo -e "RFBO105\tP4" >> pops_admx.txt
-echo -e "RFBO106\tP4" >> pops_admx.txt
 
-~/sula/abba.sh -a BfBfPeRf_500kb -b /data5/sulidae/final/to_flightless/abba/BfBfPeRf/ -c ~/sula/ -d ~/genomics_general-master/ -e /data5/sulidae/final/to_flightless/abba/sula.geno.gz -f /data5/sulidae/final/to_flightless/abba/BfBfPeRf/pops.txt -g /data5/sulidae/final/to_flightless/abba/BfBfPeRf/pops_admx.txt -k y -l 500000 -m 100 -n 2
+~/sula/abba.sh -a BfBfPeRf_500kb -b /data5/sulidae/final/to_flightless/abba/BfBfPeRf/ -c ~/sula/ -d ~/genomics_general-master/ -e /data5/sulidae/final/to_flightless/abba/sula.geno.gz -f /data5/sulidae/final/to_flightless/abba/BfBfPeRf/pops.txt -k y -l 500000 -m 100 -n 2
 
-~/sula/abba.sh -a BfBfPeRf_10kb -b /data5/sulidae/final/abba/BfBfPeRf/ -c ~/sula/ -d ~/genomics_general-master/ -e /data5/sulidae/final/abba/sula.geno.gz -f /data5/sulidae/final/abba/BfBfPeRf/pops.txt -g /data5/sulidae/final/abba/BfBfPeRf/pops_admx.txt -k y -l 10000 -m 25 -n 2
-
-~/sula/abba.sh -a BfBfPeRf_5kb -b /data5/sulidae/final/abba/BfBfPeRf/ -c ~/sula/ -d ~/genomics_general-master/ -e /data5/sulidae/final/abba/sula.geno.gz -f /data5/sulidae/final/abba/BfBfPeRf/pops.txt -g /data5/sulidae/final/abba/BfBfPeRf/pops_admx.txt -k y -l 5000 -m 3 -n 2
 
 # MA_ATLCAR MA_INDOPA     NA  RF
 
@@ -315,27 +158,7 @@ echo -e "RFBO104\tP4" >> pops.txt
 echo -e "RFBO105\tP4" >> pops.txt
 echo -e "RFBO106\tP4" >> pops.txt
 
-echo -e "MABO304\tP1" > pops_admx.txt
-echo -e "MABO305\tP1" >> pops_admx.txt
-echo -e "MABO302\tP2" >> pops_admx.txt
-echo -e "MABO306\tP2" >> pops_admx.txt
-echo -e "NABO402\tP3" >> pops_admx.txt
-echo -e "NABO403\tP3a" >> pops_admx.txt
-echo -e "NABO405\tP3a" >> pops_admx.txt
-echo -e "NABO404\tP3b" >> pops_admx.txt
-echo -e "NABO406\tP3b" >> pops_admx.txt
-echo -e "RFBO101\tP4" >> pops_admx.txt
-echo -e "RFBO102\tP4" >> pops_admx.txt
-echo -e "RFBO103\tP4" >> pops_admx.txt
-echo -e "RFBO104\tP4" >> pops_admx.txt
-echo -e "RFBO105\tP4" >> pops_admx.txt
-echo -e "RFBO106\tP4" >> pops_admx.txt
-
-~/sula/abba.sh -a MaMaNaRf_500kb -b /data5/sulidae/final/to_flightless/abba/MaMaNaRf/ -c ~/sula/ -d ~/genomics_general-master/ -e /data5/sulidae/final/to_flightless/abba/sula.geno.gz -f /data5/sulidae/final/to_flightless/abba/MaMaNaRf/pops.txt -g /data5/sulidae/final/to_flightless/abba/MaMaNaRf/pops_admx.txt -k y -l 500000 -m 100 -n 2
-
-~/sula/abba.sh -a MaMaNaRf_10kb -b /data5/sulidae/final/abba/MaMaNaRf/ -c ~/sula/ -d ~/genomics_general-master/ -e /data5/sulidae/final/abba/sula.geno.gz -f /data5/sulidae/final/abba/MaMaNaRf/pops.txt -g /data5/sulidae/final/abba/MaMaNaRf/pops_admx.txt -k y -l 10000 -m 25 -n 2
-
-~/sula/abba.sh -a MaMaNaRf_5kb -b /data5/sulidae/final/abba/MaMaNaRf/ -c ~/sula/ -d ~/genomics_general-master/ -e /data5/sulidae/final/abba/sula.geno.gz -f /data5/sulidae/final/abba/MaMaNaRf/pops.txt -g /data5/sulidae/final/abba/MaMaNaRf/pops_admx.txt -k y -l 5000 -m 3 -n 2
+~/sula/abba.sh -a MaMaNaRf_500kb -b /data5/sulidae/final/to_flightless/abba/MaMaNaRf/ -c ~/sula/ -d ~/genomics_general-master/ -e /data5/sulidae/final/to_flightless/abba/sula.geno.gz -f /data5/sulidae/final/to_flightless/abba/MaMaNaRf/pops.txt -k y -l 500000 -m 100 -n 2
 
 # PE  BF  NA  RF
 
@@ -363,8 +186,6 @@ echo -e "RFBO103\tP4" >> pops.txt
 echo -e "RFBO104\tP4" >> pops.txt
 echo -e "RFBO105\tP4" >> pops.txt
 echo -e "RFBO106\tP4" >> pops.txt
-
-
 
 
 
