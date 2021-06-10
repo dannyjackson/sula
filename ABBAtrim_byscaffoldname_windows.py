@@ -8,4 +8,4 @@ df = pd.read_csv(sys.argv[2])
 
 filtered = df[df['scaffold'].isin(mask['a'])]
 
-filtered.to_csv('trimmed.geno.tsv',sep='\t', na_rep='NA', index=False)
+filtered.to_csv('trimmed.csv', na_rep='NA', index=False)
