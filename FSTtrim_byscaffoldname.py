@@ -8,4 +8,4 @@ df = pd.read_csv(sys.argv[2], sep='\t')
 
 filtered = df[df['CHROM'].isin(mask['a'])]
 
-filtered.to_csv('trimmed.fst.tsv',sep='\t', na_rep='NA', index=False)
+filtered.to_csv('trimmed.fst.txt',sep='\t', na_rep='NA', index=False)
