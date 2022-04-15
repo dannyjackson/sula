@@ -38,9 +38,6 @@ Important settings within the script: ILLUMINACLIP:$adapters:1:30:10 LEADING:20 
 
     ~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf --allow-extra-chr --snps-only 'just-acgt' --geno 0.02 --mind 0.2 --maf 0.01 --recode vcf-iid --out sula_flightless_flightless_mind2
 
-#Note that the vcf is significantly reduced by the maf 0.01 command. Leave this off for any analyses that don't require it (only RAxML requires it)
-
-
     ~/plink --vcf /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf --allow-extra-chr --snps-only 'just-acgt' --geno 0.02 --mind 0.1 --maf 0.01 --recode vcf-iid --out sula_flightless_cleaned
 
 
