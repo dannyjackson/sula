@@ -1,0 +1,1758 @@
+# https://watermark.silverchair.com/syac078.pdf?token=AQECAHi208BE49Ooan9kkhW_Ercy7Dm3ZL_9Cf3qfKAc485ysgAAAvkwggL1BgkqhkiG9w0BBwagggLmMIIC4gIBADCCAtsGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQM5Dju5MSJiTqjluTBAgEQgIICrCRWcEOpBHJOAKj3d-SA-raLMEoCfM_OHDhzaflCt7TwF0CqNfQ5lTK2HTFS53dUWfLB93ml-p4xdNI0GaHaKk0iVLAXqi1FqrEay6eerjb2CUMuIGzcwjSMeZG8uyfEyl_v_BF80oETHdcukm2GriWwvXvBauu2SWhjwL4721jxRGdh4OurySbAQagaiepYCMgVlCYLHIFQ4qNVX9BqboWefcNfx0tzFvxWWD7CgEQGhQ-JKllRb7hOWSNaJxOTygN_pFw3ausXyGSAumtJLuPI4w5n4JTTIJv88CehaXjuthnvM98rJIgs4D4eCsjmc1QGU22DW7C6Ze_VYFys-uVS6FRloRXcSeVXLAIO8Dovb5M68SYqwQcACJkrrXB-bkDKFnwXx2Ik7uQJT9TKybiz0cjUtNoNVg7HUVBLUforERBQJXH4a0qbOxxD3v-DcgYL3GiMrAmtFNpeFwtk7QB1KeUJ4PX9gg8nuE2p-BIWvn3k4ytvIoSIl9dl__ffuMN1aN1eJCgAwYC5mVEQkDRgIFjM_VE51qRP0bnbXpKBpUegaxoqNwAjH0SH7UVfGxPaye-zss7bDYxRX-Y9N6utuSWQ2dCLY7DSHiDwRivm8YY9n99XY6k9tYBn8hx7uJXNmE1jFgJv1Hdnb9h4nxqm-1siXIykAwc2cwZv38b2UG4gsTt9p-eQk9Wm95rDMOqrHBOAJl1NtnLnRCyTLkHXdrHcX8aoG00FCNAAHuoAjBiztaynzTd-ctSXYRr_1h8zPw-D4kv-EZhodd5W5k_rd8MJtT90In1r1dGjPMisrMojWbCt9VYe9MjhoyVbrAm6mzkwk8wyPUiDzPks3V8ehO9XRy885PwjHlHnJZMfeRAr-X-97bejIC_37SOCvcIVib-dqTMWOtNloQ
+
+# https://github.com/crazyhottommy/bioinformatics-one-liners/blob/master/README.md
+
+https://github.com/elsemikk/Stercorariidae_Phylogenomics/blob/master/Supplementary_Materials/Mikkelsen%26Weir_2022_Supplementary_Materials.docx
+
+1.0_datasets -> 1.1c_read_trimming -> 1.3c_mapping -> 1.5c_genotyping -> 1.6.1c_phylogenetic_blocks -> 2.8c_phylonet
+Final result: Phylonet_best_network.tree
+
+
+We built a species phylogeny using StarBeast3 v1.0.4 (Douglas et al. 2022) using a dataset of 107 5-kb phased haplotype blocks (Figure S5).
+
+To construct the blocks, we filtered genotype calls for a minimum mapping quality of 20, maximum average sequencing depth of 20×, and minimum individual genotype depth of 5×.
+
+We phased genotypes into haplotypes using read-aware phasing in shapeit v2.904 (Delaneau et al. 2013), with a minimum read quality and base quality of 20 in the extractPIRs step. We generated haplotype sequences from the resulting VCF file using bcftools consensus v1.14 (Li 2011). Since shapeit imputes missing data, we reverted imputed genotypes back to missing data using bedtools maskfasta v2.30.0 (Quinlan and Hall 2010). We divided the genome into 5 kb blocks. As the computational requirements of Starbeast3 preclude analyzing the entire dataset, we filtered to remove all blocks in which any stercorariid had more than 7% missing data, resulting in a dataset of 107 autosomal blocks spread throughout the genome, each a minimum of 10 kb apart.
+
+We built a phylogenetic network in a multispecies coalescent framework with Phylonet v3.8.2 (Than et al. 2008; Wen et al. 2018). As input, we used a dataset of 9899 phased autosomal 5-kb blocks. These blocks were constructed as described for the StarBeast3 analysis, but with a final filter for a maximum of 1000 bp missing data in any Stercorariid, rather than a maximum of 350 bp. Methods for the Phylonet analysis are provided in the main text. The best network inferred three introgression events, shown in Figure S9.
+
+
+
+# split vcf into chromosomes
+
+bcftools view -m2 -M2 -v snps /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf.gz -o sula_flightless_filtered_biallelic.vcf
+
+bgzip sula_flightless_filtered_biallelic.vcf 
+
+
+bcftools index sula_flightless_filtered_biallelic.vcf.gz 
+
+zcat sula_flightless_filtered_biallelic.vcf.gz | cut -f 1 | grep -v '#' > chromosomenames.txt
+
+
+nohup zcat sula_flightless_filtered_biallelic.vcf.gz | grep '##contig' > contiglengths.txt &
+
+awk -F= '{print substr($4, 1, length($4)-1)}' contiglengths.txt 
+
+awk -F '[=,]' '{if(substr($5, 1, length($5)-1)*1 > 5000)print $3} ' contiglengths.txt  > chromosomenames_5000min.txt
+
+
+parallel -j 30 -a chromosomenames_5000min.txt 'C={}; bcftools view -O z -r ${C} -o split_vcf_parallel_may2/split.${C}.vcf.gz sula_flightless_filtered_biallelic.vcf.gz' 
+
+parallel -j 30 -a chromosomenames_5000min.txt 'C={}; bcftools index split_vcf_parallel_may2/split.${C}.vcf.gz' 
+
+# i have to recreate the bam files to use as input for extractPIRs
+align-and-sort.sh -i /data5/sulidae/reference_lists/sulafilenames.txt -r ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -t 12 -p /data5/sulidae/my_datasets/trimmedfiles/trimmedseq/ -b bam_files_flightless -s sorted_bam_files_flightless
+
+bwa mem -t $threads $ref $fastqs_path"$ID"_trimmed_1P.fq.gz \
+    $fastqs_path"$ID"_trimmed_2P.fq.gz | \
+    samtools view -b -o $bamoutdir$ID.bam -S
+
+split.NEVG01000002.1
+# gotta repeat all of the following with 
+while read -r line
+do 
+  sed 's/replacethis/'"$line"'/g' /data5/sulidae/reference_lists/bamlist_reference.txt > /data5/sulidae/reference_lists/bamlists/bamlist_"$line".txt 
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+while read -r line
+do 
+  zcat /data5/sulidae/revisions/split_vcf_parallel_may2/split."$line".vcf.gz | sed 's/RFBO101/RFBOPAL63/g' > /data5/sulidae/revisions/split_vcf_parallel_may2/split."$line".rfbooriginal.vcf
+
+  bcftools view -s BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506,BRBO201,BRBO202,BRBO203,BRBO205,MABO301,MABO302,MABO304,MABO305,MABO306,NABO401,NABO402,NABO403,NABO404,NABO405,NABO406,PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106,RFBOPAL63 /data5/sulidae/revisions/split_vcf_parallel_may2/split."$line".rfbooriginal.vcf > /data5/sulidae/revisions/split_vcf_parallel_may2/split."$line".rfbooriginal.nobrbo204.vcf
+
+  rm /data5/sulidae/revisions/split_vcf_parallel_may2/split."$line".rfbooriginal.vcf
+  
+  bgzip /data5/sulidae/revisions/split_vcf_parallel_may2/split."$line".rfbooriginal.nobrbo204.vcf
+
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+mkdir /data5/sulidae/reference_lists/myPIRsLists/
+
+mkdir /data5/sulidae/revisions/haplotypes/
+
+
+while read -r line
+do 
+  ~/programs/extractPIRs.v1.r68.x86_64/extractPIRs --bam /data5/sulidae/reference_lists/bamlists/bamlist_"$line".txt  \
+              --vcf /data5/sulidae/revisions/split_vcf_parallel_may2/split."$line".rfbooriginal.nobrbo204.vcf.gz \
+              --out /data5/sulidae/reference_lists/myPIRsLists/myPIRsList."$line".txt
+
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+while read -r line
+do 
+  ~/programs/shapeit.v2.904.3.10.0-693.11.6.el7.x86_64/bin/shapeit -assemble \
+        --input-vcf /data5/sulidae/revisions/split_vcf_parallel_may2/split."$line".rfbooriginal.nobrbo204.vcf.gz \
+        --input-pir /data5/sulidae/reference_lists/myPIRsLists/myPIRsList."$line".txt \
+        -O /data5/sulidae/revisions/haplotypes/myHaplotypeData."$line".txt 
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+while read -r line
+do 
+  mkdir /data5/sulidae/revisions/phylonet/stats/"$line"
+
+  cd /data5/sulidae/revisions/phylonet/stats/"$line"
+
+  ~/plink --vcf /data5/sulidae/revisions/split_vcf_parallel_may2/split."$line".rfbooriginal.nobrbo204.vcf.gz --missing --allow-extra-chr
+
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+while read -r chrom
+do 
+  LIST=$(awk -F ' ' '{print $6;}' /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | sed 1d | tr '\n' ' ')
+
+  PRESENT=$(cat /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | wc -l)
+
+  MISSCOUNT=0
+  if (( $(echo "$PRESENT < 5" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+  fi
+
+  
+  for item in ${LIST}; do
+    if (( $(echo "$item > 0.07" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+    fi
+  done
+
+  if (( $(echo "$MISSCOUNT < 1" | bc -l) )); then 
+    echo $chrom >> /data5/sulidae/revisions/goodchroms.07.txt 
+    cat /data5/sulidae/revisions/goodchroms.07.txt | wc -l
+  fi
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+
+while read -r chrom
+do 
+  LIST=$(awk -F ' ' '{print $6;}' /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | sed 1d | tr '\n' ' ')
+
+  PRESENT=$(cat /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | wc -l)
+
+  MISSCOUNT=0
+  if (( $(echo "$PRESENT < 5" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+  fi
+
+  
+  for item in ${LIST}; do
+    if (( $(echo "$item > 0.1" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+    fi
+  done
+
+  if (( $(echo "$MISSCOUNT < 1" | bc -l) )); then 
+    echo $chrom >> /data5/sulidae/revisions/goodchroms.1.txt 
+    cat /data5/sulidae/revisions/goodchroms.1.txt | wc -l
+  fi
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+
+
+while read -r chrom
+do 
+  LIST=$(awk -F ' ' '{print $6;}' /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | sed 1d | tr '\n' ' ')
+
+  PRESENT=$(cat /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | wc -l)
+
+  MISSCOUNT=0
+  if (( $(echo "$PRESENT < 5" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+  fi
+
+  
+  for item in ${LIST}; do
+    if (( $(echo "$item > 0.5" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+    fi
+  done
+
+  if (( $(echo "$MISSCOUNT < 1" | bc -l) )); then 
+    echo $chrom >> /data5/sulidae/revisions/goodchroms.5.txt 
+    cat /data5/sulidae/revisions/goodchroms.5.txt | wc -l
+  fi
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+
+
+
+while read -r chrom
+do 
+  LIST=$(awk -F ' ' '{print $6;}' /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | sed 1d | tr '\n' ' ')
+
+  PRESENT=$(cat /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | wc -l)
+
+  MISSCOUNT=0
+  if (( $(echo "$PRESENT < 5" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+  fi
+
+  
+  for item in ${LIST}; do
+    if (( $(echo "$item > 0.15" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+    fi
+  done
+
+  if (( $(echo "$MISSCOUNT < 1" | bc -l) )); then 
+    echo $chrom >> /data5/sulidae/revisions/goodchroms.15.txt 
+    cat /data5/sulidae/revisions/goodchroms.15.txt | wc -l
+  fi
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+
+
+
+
+
+while read -r chrom
+do 
+  LIST=$(awk -F ' ' '{print $6;}' /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | sed 1d | tr '\n' ' ')
+
+  PRESENT=$(cat /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | wc -l)
+
+  MISSCOUNT=0
+  if (( $(echo "$PRESENT < 5" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+  fi
+
+  
+  for item in ${LIST}; do
+    if (( $(echo "$item > 0.2" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+    fi
+  done
+
+  if (( $(echo "$MISSCOUNT < 1" | bc -l) )); then 
+    echo $chrom >> /data5/sulidae/revisions/goodchroms.2.txt 
+    cat /data5/sulidae/revisions/goodchroms.2.txt | wc -l
+  fi
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+
+
+
+
+
+
+
+while read -r chrom
+do 
+  LIST=$(awk -F ' ' '{print $6;}' /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | sed 1d | tr '\n' ' ')
+
+  PRESENT=$(cat /data5/sulidae/revisions/phylonet/stats/"$chrom"/plink.imiss | wc -l)
+
+  MISSCOUNT=0
+  if (( $(echo "$PRESENT < 5" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+  fi
+
+  
+  for item in ${LIST}; do
+    if (( $(echo "$item > 0.25" | bc -l) )); then
+        MISSCOUNT=$(($MISSCOUNT + 1))
+    fi
+  done
+
+  if (( $(echo "$MISSCOUNT < 1" | bc -l) )); then 
+    echo $chrom >> /data5/sulidae/revisions/goodchroms.25.txt 
+    cat /data5/sulidae/revisions/goodchroms.25.txt | wc -l
+  fi
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+
+while read -r line
+do 
+  ~/programs/shapeit.v2.904.3.10.0-693.11.6.el7.x86_64/bin/shapeit  -convert \
+        --input-haps /data5/sulidae/revisions/haplotypes/myHaplotypeData."$line".txt \
+        --output-vcf /data5/sulidae/revisions/shapeit_vcf/myHaplotypeData."$line".vcf
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+~/programs/shapeit.v2.904.3.10.0-693.11.6.el7.x86_64/bin/shapeit  -convert \
+      --input-haps /data5/sulidae/revisions/haplotypes/myHaplotypeData.NEVG01002597.1.txt \
+      --output-vcf /data5/sulidae/revisions/shapeit_vcf/myHaplotypeData.NEVG01002597.1.vcf
+
+while read -r line
+do
+  grep '##' /data5/sulidae/revisions/shapeit_vcf/myHaplotypeData."$line".vcf > header.tmp
+  zcat /data5/sulidae/revisions/sula_flightless_filtered_biallelic.vcf.gz | grep $line | head -1 >> header.tmp
+  grep -v '##' /data5/sulidae/revisions/shapeit_vcf/myHaplotypeData."$line".vcf >> header.tmp
+  mv header.tmp /data5/sulidae/revisions/shapeit_vcf_new/myHaplotypeData."$line".vcf
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+while read -r line
+do
+  bgzip /data5/sulidae/revisions/shapeit_vcf/myHaplotypeData."$line".vcf
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+while read -r line
+do
+  bcftools index /data5/sulidae/revisions/shapeit_vcf/myHaplotypeData."$line".vcf.gz
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+# i need to convert these into fasta files
+
+grep '##' /data5/sulidae/revisions/temporary/myHaplotypeData.NEVG01000001.1.vcf > header.tmp
+zcat /data5/sulidae/revisions/sula_flightless_filtered_biallelic.vcf.gz | grep NEVG01000001.1 | head -1 >> header.tmp
+grep -v '##' /data5/sulidae/revisions/temporary/myHaplotypeData.NEVG01000001.1.vcf >> header.tmp
+mv header.tmp /data5/sulidae/revisions/temporary/myHaplotypeData.NEVG01000001.1.vcf
+
+
+
+echo 'BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506,BRBO201,BRBO202,BRBO203,BRBO205,MABO301,MABO302,MABO304,MABO305,MABO306,NABO401,NABO402,NABO403,NABO404,NABO405,NABO406,PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106,RFBOPAL63' >  /data5/sulidae/reference_lists/phylonetworks_samplenames.txt
+sed -i 's/,/\n/g' /data5/sulidae/reference_lists/phylonetworks_samplenames.txt
+
+
+while read -r chrom; do
+  while read -r bird; do
+    echo '>' $bird >> /data5/sulidae/revisions/phylonetwork_fastas/long/"$chrom".fa
+
+    samtools faidx ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna $chrom| bcftools consensus /data5/sulidae/revisions/shapeit_vcf/myHaplotypeData."$chrom".vcf.gz -s $bird | sed 1d >> /data5/sulidae/revisions/phylonetwork_fastas/long/"$chrom".fa
+
+  done < /data5/sulidae/reference_lists/phylonetworks_samplenames.txt
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+while read -r chrom; do
+  cat /data5/sulidae/revisions/phylonetwork_fastas/long/"$chrom".fa | wc -l
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+# this is outputting the same file as before. i don't think shapeit imputed missing data for me.
+# reconsidering. because now all species have the same number of Ns, but varying number of non-Ns... idk
+
+while read -r chrom; do
+ bedtools maskfasta -fi /data5/sulidae/revisions/phylonetwork_fastas/long/"$chrom".fa -bed /data5/sulidae/revisions/split_vcf_parallel_may2/split."$chrom".rfbooriginal.nobrbo204.vcf.gz -fo /data5/sulidae/revisions/phylonet/masked/"$chrom".fa
+done < /data5/sulidae/revisions/goodchroms.25.txt
+
+# didn't work
+bedtools maskfasta -fi /data5/sulidae/revisions/phylonetwork_fastas/long/NEVG01002630.1.fa -bed /data5/sulidae/my_datasets/sula_flightless.vcf.gz -fo /data5/sulidae/revisions/phylonet/working/temp.fa
+
+
+
+
+# and i need to split these fasta files into 6kb chunks
+
+while read -r chrom; do
+  echo "starting $chrom"
+  cat /data5/sulidae/revisions/phylonetwork_fastas/long/"$chrom".fa| awk '/^>/{if(N>0) printf("\n"); ++N; printf("%s\t",$0);next;} {printf("%s",$0);}END{printf("\n");}' > /data5/sulidae/revisions/phylonetwork_fastas/temp.fa
+
+  VAR1=$(zcat /data5/sulidae/revisions/sula_flightless_filtered_biallelic.vcf.gz | grep $chrom | head -1 | awk -F'=' '{print $4;}' | sed 's/>//g')
+
+  VARCOUNT=$"0"
+  echo "looping $chrom"
+
+  until [ $VAR1 -le 5000 ]; do 
+    echo "round $VARCOUNT"
+
+    awk -F'\t' 'BEGIN {OFS = '\t'} {ind=$1;} {fasta=substr($2,0,5000);} {print ind, "\t", fasta;}' /data5/sulidae/revisions/phylonetwork_fastas/temp.fa > /data5/sulidae/revisions/phylonetwork_fastas/5000kb/"$chrom"_"$VARCOUNT".fa 
+
+    awk -F'\t' 'BEGIN {OFS = '\t'} {ind=$1;} {fasta=substr($2,15001);} {print ind, "\t", fasta;}' /data5/sulidae/revisions/phylonetwork_fastas/temp.fa > /data5/sulidae/revisions/phylonetwork_fastas/temp2.fa
+
+    mv /data5/sulidae/revisions/phylonetwork_fastas/temp2.fa /data5/sulidae/revisions/phylonetwork_fastas/temp.fa
+
+    VARCOUNT=$(($VARCOUNT + 1))
+    VAR1=$(($VAR1 - 15000))
+  done
+  rm /data5/sulidae/revisions/phylonetwork_fastas/temp.fa
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+
+/data5/sulidae/revisions/phylonetwork_fastas/long/NEVG01000001.1.fa
+
+ls /data5/sulidae/revisions/phylonetwork_fastas/5000kb/ | sed 's/.fa//g' | head > /data5/sulidae/revisions/5000kbhaplotypes.txt
+
+while read -r haplotype; do
+
+  cat /data5/sulidae/revisions/phylonetwork_fastas/5000kb/"$haplotype".fa | tr "\t" "\n" |  fold -w 60 > /data5/sulidae/revisions/phylonetwork_fastas/5000kb/"$haplotype".folded.fa
+
+  mkdir /data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/"$haplotype"/
+
+  raxmlHPC -s /data5/sulidae/revisions/phylonetwork_fastas/5000kb/"$haplotype".folded.fa -m GTRCAT -p 12345 -n test -w /data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/"$haplotype"/
+
+  cat /data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/BestTrees.tre
+
+done < /data5/sulidae/revisions/5000kbhaplotypes.txt
+
+
+
+
+##### redoing with just the ones with less than 25% missingness
+# the issue is that i'm getting so, so many 5kb haplotypes. it only did like 6 scaffolds and created over 14k blocks. how did the Mikkelsen group get it down to just 107 autosomal blocks? They filtered the blocks, not the scaffolds, to exclude any where any species had more than 7% missing data, which I guess I could do by hand? Just with grep and awk probably
+
+while read -r chrom; do
+  echo "starting $chrom"
+  cat /data5/sulidae/revisions/phylonetwork_fastas/long/"$chrom".fa | awk '/^>/{if(N>0) printf("\n"); ++N; printf("%s\t",$0);next;} {printf("%s",$0);}END{printf("\n");}' > /data5/sulidae/revisions/phylonet/temp.fa
+
+  VAR1=$(zcat /data5/sulidae/revisions/sula_flightless_filtered_biallelic.vcf.gz | grep $chrom | head -1 | awk -F'=' '{print $4;}' | sed 's/>//g')
+
+  VARCOUNT=$"0"
+  echo "looping $chrom"
+
+  until [ $VAR1 -le 5000 ]; do 
+    echo "round $VARCOUNT"
+
+    awk -F'\t' 'BEGIN {OFS = '\t'} {ind=$1;} {fasta=substr($2,0,5000);} {print ind, "\t", fasta;}' /data5/sulidae/revisions/phylonet/temp.fa > /data5/sulidae/revisions/phylonet/5000kb/"$chrom"_"$VARCOUNT".fa 
+
+    awk -F'\t' 'BEGIN {OFS = '\t'} {ind=$1;} {fasta=substr($2,105000);} {print ind, "\t", fasta;}' /data5/sulidae/revisions/phylonet/temp.fa > /data5/sulidae/revisions/phylonet/temp2.fa
+
+    mv /data5/sulidae/revisions/phylonet/temp2.fa /data5/sulidae/revisions/phylonet/temp.fa
+
+    VARCOUNT=$(($VARCOUNT + 1))
+    VAR1=$(($VAR1 - 105000))
+  done
+  rm /data5/sulidae/revisions/phylonet/temp.fa
+done < /data5/sulidae/revisions/goodchroms.25.txt
+
+
+
+### redoing it with the bedtools masked output 
+
+while read -r chrom; do
+  echo "starting $chrom"
+  cat /data5/sulidae/revisions/phylonet/masked/"$chrom".fa | awk '/^>/{if(N>0) printf("\n"); ++N; printf("%s\t",$0);next;} {printf("%s",$0);}END{printf("\n");}' > /data5/sulidae/revisions/phylonet/masked/temp.fa
+
+  VAR1=$(zcat /data5/sulidae/revisions/sula_flightless_filtered_biallelic.vcf.gz | grep $chrom | head -1 | awk -F'=' '{print $4;}' | sed 's/>//g')
+
+  VARCOUNT=$"0"
+  echo "looping $chrom"
+
+  until [ $VAR1 -le 5000 ]; do 
+    echo "round $VARCOUNT"
+
+    awk -F'\t' 'BEGIN {OFS = '\t'} {ind=$1;} {fasta=substr($2,0,5000);} {print ind, "\t", fasta;}' /data5/sulidae/revisions/phylonet/masked/temp.fa > /data5/sulidae/revisions/phylonet/5000kb_masked/"$chrom"_"$VARCOUNT".fa 
+
+    awk -F'\t' 'BEGIN {OFS = '\t'} {ind=$1;} {fasta=substr($2,105000);} {print ind, "\t", fasta;}' /data5/sulidae/revisions/phylonet/masked/temp.fa > /data5/sulidae/revisions/phylonet/masked/temp2.fa
+
+    mv /data5/sulidae/revisions/phylonet/masked/temp2.fa /data5/sulidae/revisions/phylonet/masked/temp.fa
+
+    VARCOUNT=$(($VARCOUNT + 1))
+    VAR1=$(($VAR1 - 105000))
+  done
+  rm /data5/sulidae/revisions/phylonet/masked/temp.fa
+done < /data5/sulidae/revisions/goodchroms.25.txt
+
+ls 5000kb/ | awk -F '.' '{print $1}' | sort | uniq -u 
+
+ls 5000kb/ > 5000kb_filenames.txt
+
+ls 5000kb_masked/ > 5000kb_masked_filenames.txt
+
+
+awk -F '\t' '{print $2}' 5000kb_masked/NEVG01000026.1_10.fa | sed 's/[^N]//g' | awk '{ print length }' | uniq -c 
+
+
+while read -r file; do
+  
+  awk -F '\t' '{print $2}' /data5/sulidae/revisions/phylonet/5000kb_masked/"$file" | sed 's/[^N]//g' | awk '{ print length }' >> temp.txt
+  
+done < /data5/sulidae/revisions/phylonet/5000kb_masked_filenames.txt 
+
+awk -F '\t' '{print $2}' /data5/sulidae/revisions/phylonet/5000kb_masked/NEVG01000003.1_0.fa | sed 's/[^N]//g' | awk '{ print length }' | uniq -c | awk '{print $2}'
+
+
+while read -r file; do
+  
+   if [[ $(awk -F '\t' '{print $2}' /data5/sulidae/revisions/phylonet/5000kb_masked/"$file"  | sed 's/[^N]//g' | awk '{ print length }' | uniq -c | awk '{print $2}') -le 350 ]]; then
+    echo $file >> scaffolds.07missing.txt
+  fi
+  
+done < /data5/sulidae/revisions/phylonet/5000kb_masked_filenames.txt 
+
+
+
+while read -r file; do
+  
+   if [[ $(awk -F '\t' '{print $2}' /data5/sulidae/revisions/phylonet/5000kb_masked/"$file"  | sed 's/[^N]//g' | awk '{ print length }' | uniq -c | awk '{print $2}') -le 250 ]]; then
+    echo $file >> scaffolds.05missing.txt
+  fi
+  
+done < /data5/sulidae/revisions/phylonet/5000kb_masked_filenames.txt 
+
+/data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+while read -r haplotype; do
+
+  if [[ $(ls /data5/sulidae/revisions/phylonet/PEBO_BFBO_raxml_trees/"$haplotype"/RAxML_bestTree.test -A | wc -l) -ge 1 ]]; then
+      echo $haplotype >> /data5/sulidae/revisions/treehaplotypes.txt
+  fi
+
+done < /data5/sulidae/revisions/fastas_for_tree.txt
+
+awk -F' ' '{print $2}' temp.txt | uniq -c
+
+
+
+while read -r haplotype; do
+
+  cat /data5/sulidae/revisions/phylonet/5000kb/"$haplotype".fa | tr "\t" "\n" |  fold -w 60 > /data5/sulidae/revisions/phylonet/5000kb/"$haplotype".folded.fa
+
+  mkdir /data5/sulidae/revisions/phylonet/raxml_trees/"$haplotype"/
+
+  raxmlHPC -s /data5/sulidae/revisions/phylonet/5000kb/"$haplotype".folded.fa -m GTRCAT -p 12345 -n test -w /data5/sulidae/revisions/phylonet/raxml_trees/"$haplotype"/
+
+  cat /data5/sulidae/revisions/phylonet/raxml_trees/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/raxml_trees/BestTrees.tre
+
+done < /data5/sulidae/revisions/goodchroms.25.txt
+
+
+ls /data5/sulidae/revisions/phylonet/5000kb_masked | sed 's/.fa//g' > /data5/sulidae/revisions/fastas_for_tree.txt
+
+while read -r haplotype; do
+
+  cat /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".fa | tr "\t" "\n" |  fold -w 60 > /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".folded.fa
+
+  mkdir /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/
+
+  raxmlHPC -s /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".folded.fa -m GTRCAT -p 12345 -n test -w /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/
+
+  cat /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/raxml_trees_masked/BestTrees.tre
+
+done < /data5/sulidae/revisions/fastas_for_tree.txt
+
+#### Before I run phylonetworks, I need to estimate a species tree given a set of unrooted gene trees 
+https://github.com/smirarab/ASTRAL/blob/master/astral-tutorial.md
+
+java -jar ~/programs/Astral/astral.5.7.8.jar -i /data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/BestTrees.tre -o /data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/Astral_Species.tre
+
+
+
+
+
+
+
+### PEBO BFBO Network 
+
+while read -r haplotype; do
+  grep 'BFBO' /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".fa >> /data5/sulidae/revisions/phylonet/PEBO_BFBO_5000kb/"$haplotype".fa
+  grep 'PEBO' /data5/sulidae/revisions/phylonet/5000kb/"$haplotype".fa >> /data5/sulidae/revisions/phylonet/PEBO_BFBO_5000kb/"$haplotype".fa
+done < /data5/sulidae/revisions/fastas_for_tree.txt
+
+rm /data5/sulidae/revisions/phylonet/PEBO_BFBO_5000kb/*folded*
+
+while read -r haplotype; do
+
+  cat /data5/sulidae/revisions/phylonet/PEBO_BFBO_5000kb/"$haplotype".fa | tr "\t" "\n" |  fold -w 60 > /data5/sulidae/revisions/phylonet/PEBO_BFBO_5000kb/"$haplotype".folded.fa
+
+  mkdir /data5/sulidae/revisions/phylonet/PEBO_BFBO_raxml_trees/"$haplotype"/
+
+  raxmlHPC -s /data5/sulidae/revisions/phylonet/PEBO_BFBO_5000kb/"$haplotype".folded.fa -m GTRCAT -p 12345 -n test -w /data5/sulidae/revisions/phylonet/PEBO_BFBO_raxml_trees/"$haplotype"/
+
+  cat /data5/sulidae/revisions/phylonet/PEBO_BFBO_raxml_trees/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/PEBO_BFBO_raxml_trees/BestTrees.tre
+
+done < /data5/sulidae/revisions/fastas_for_tree.txt
+
+########################################################################
+Trying Phylonet instead of Phylonetworks
+# We tested 0–4 reticulation edges, performing 100 runs per search replicated three times, and selected the best model based on bias-corrected Akaike Information Criterion (AICc) and Bayesian Information Criterion (BIC), as recommended
+
+InferNetwork_MPL geneTreeList numReticulations [-a taxa map] [-b threshold] [-s startingNetwork] [-fs] [-n numNetReturned] [-h {s1 [,s2...]}] [-w (w1,...,w7)] [-x numRuns] [-m maxNetExamined] [-md moveDiameter] [-rd reticulationDiameter] [-f maxFailure] [-o] [-po] [-p (rel,abs)] [-r maxRounds] [-t maxTryPerBr] [-i improveThreshold] [-l maxBL] [-pl numProcessors] [-di] [resultOutputFile]
+
+
+while read -r haplotype; do
+
+  if [[ $(ls /data5/sulidae/revisions/phylonet/PEBO_BFBO_raxml_trees/"$haplotype"/RAxML_bestTree.test -A | wc -l) -ge 1 ]]; then
+      echo $haplotype >> /data5/sulidae/revisions/treehaplotypes.txt
+  fi
+
+done < /data5/sulidae/revisions/fastas_for_tree.txt
+
+
+
+### Estimate a species tree using Astral
+java -jar ~/programs/Astral/astral.5.7.8.jar -i /data5/sulidae/revisions/phylonet/raxml_trees_masked/BestTrees.tre -o /data5/sulidae/revisions/phylonet/all/Astral_Species.tre 
+
+### running phylonet
+# 1 reticulation
+screen -r 2877623
+# 2 reticulations
+screen -r 2950545
+# 3 reticulations
+screen -r 2956972
+# 4 reticulations
+screen -r 2971715
+# Started all around 1pm on Wednesday, May 24th
+
+
+### one reticulation
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/all/script_1ret.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/all/script_1ret.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/treehaplotypes.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 1 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO_PAC:BRBO201,BRBO202; BRBO_ATLCAR:BRBO203,BRBO205; MABO_INDOPAC:MABO301,MABO302,MABO306; MABO_ATLCAR:MABO304,MABO305; NABO:NABO401, NABO402,NABO403,NABO404,NABO405,NABO406; BFBO_GULFCA:BFBO504; BFBO_HYBRIDZONE:BFBO502,BFBO503; BFBO_MID:BFBO501,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_1ret.tre;\n\nEND;" >> /data5/sulidae/revisions/phylonet/all/script_1ret.nex
+
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/all/script_1ret.nex > /data5/sulidae/revisions/phylonet/all/phylonet_allspecies_1ret.txt 
+
+
+## two reticulations 
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/all/script_2ret.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/all/script_2ret.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/treehaplotypes.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 2 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO_PAC:BRBO201,BRBO202; BRBO_ATLCAR:BRBO203,BRBO205; MABO_INDOPAC:MABO301,MABO302,MABO306; MABO_ATLCAR:MABO304,MABO305; NABO:NABO401, NABO402,NABO403,NABO404,NABO405,NABO406; BFBO_GULFCA:BFBO504; BFBO_HYBRIDZONE:BFBO502,BFBO503; BFBO_MID:BFBO501,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 resultOutputFile phylonet_allspecies_2ret.txt -di phylonet_allspecies_2ret.tre;\n\nEND;" >> /data5/sulidae/revisions/phylonet/all/script_2ret.nex
+
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/all/script_2ret.nex > /data5/sulidae/revisions/phylonet/all/phylonet_allspecies_2ret.txt 
+
+
+
+## three reticulations 
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/all/script_3ret.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/all/script_3ret.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/treehaplotypes.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 3 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO_PAC:BRBO201,BRBO202; BRBO_ATLCAR:BRBO203,BRBO205; MABO_INDOPAC:MABO301,MABO302,MABO306; MABO_ATLCAR:MABO304,MABO305; NABO:NABO401, NABO402,NABO403,NABO404,NABO405,NABO406; BFBO_GULFCA:BFBO504; BFBO_HYBRIDZONE:BFBO502,BFBO503; BFBO_MID:BFBO501,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 resultOutputFile phylonet_allspecies_3ret.txt -di phylonet_allspecies_3ret.tre;\n\nEND;" >> /data5/sulidae/revisions/phylonet/all/script_3ret.nex
+
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/all/script_3ret.nex > /data5/sulidae/revisions/phylonet/all/phylonet_allspecies_3ret.txt 
+
+
+
+
+
+while read -r file; do
+  
+   if [[ $(awk -F '\t' '{print $2}' /data5/sulidae/revisions/phylonet/5000kb_masked/"$file"  | sed 's/[^N]//g' | awk '{ print length }' | uniq -c | awk '{print $2}') -le 350 ]]; then
+    echo $file >> scaffolds.07missing.txt
+  fi
+  
+done < /data5/sulidae/revisions/phylonet/5000kb_masked_filenames.txt 
+
+## four reticulations 
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/all/script_4ret.nex
+
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  if [[ $(cat /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test | wc -l) -ge 1 ]]; then 
+    echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/all/script_4ret.nex
+
+    TREECOUNT=$(($TREECOUNT + 1))
+  fi
+
+done < /data5/sulidae/revisions/treehaplotypes.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 4 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 resultOutputFile phylonet_allspecies_4ret.txt -di phylonet_allspecies_4ret.tre;\n\nEND;" >> /data5/sulidae/revisions/phylonet/all/script_4ret.nex
+
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/all/script_4ret.nex > /data5/sulidae/revisions/phylonet/all/phylonet_allspecies_4ret.txt 
+
+
+We found evidence for introgression between:
+
+blue-footed (Sula nebouxii) and Peruvian boobies (S. variegata); 
+  PEBO (BFBO 4, BFBO 2,3)
+masked (S. dactylatra) and Nazca boobies (S. granti); 
+  NABO (MABO 6,2, MABO 4,5)
+blue-footed and Nazca boobies. 
+  NABO (BFBO,PEBO)
+
+We found no evidence of introgression between blue-footed and brown boobies (S. leucogaster)
+  BFBO (BRBO 3,5; BRBO 1,2)
+and masked and brown boobies despite observed hybridization between these species. 
+  BRBO (MABO 2,6; MABO 4,5)
+
+We also found evidence for gene flow across several major land masses in three pantropical species: red-footed (S. sula), brown, and masked boobies.
+
+
+
+
+
+
+
+
+#### redoing it with true species
+
+sed -i 's/.fa//g' /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+### one reticulations
+# rep 1
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep1.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep1.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 4 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_1ret_rep1.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep1.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_1ret_rep1.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep1.nex 
+
+
+
+# rep 2
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep2.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep2.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 4 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_1ret_rep2.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep2.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_1ret_rep2.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep2.nex 
+
+
+# rep 3
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep3.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep3.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 4 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_1ret_rep3.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep3.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_1ret_rep3.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_1ret_rep3.nex 
+
+### two reticulations
+# rep 1
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep1.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep1.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 2 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_2ret_rep1.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep1.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_2ret_rep1.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep1.nex 
+
+# rep 2
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep2.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep2.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 2 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_2ret_rep2.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep2.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_2ret_rep2.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep2.nex 
+
+
+
+# rep 3
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep3.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep3.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 2 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_2ret_rep3.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep3.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_2ret_rep3.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_2ret_rep3.nex 
+
+### three reticulations
+# rep 1
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep1.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep1.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 3 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_3ret_rep1.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep1.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_3ret_rep1.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep1.nex 
+
+# rep 2
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep2.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep2.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 3 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_3ret_rep2.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep2.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_3ret_rep2.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep2.nex 
+
+
+# rep 3
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep3.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep3.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 3 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_3ret_rep3.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep3.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_3ret_rep3.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_3ret_rep3.nex 
+
+
+
+### four reticulations
+# rep 1
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep1.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep1.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 1 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_4ret_rep1.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep1.nex
+
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep1.nex 
+
+# rep 2
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep2.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep2.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 1 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_4ret_rep2.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep2.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_4ret_rep2.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep2.nex 
+
+
+# rep 3
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep3.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep3.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/phylonet/scaffolds.05missing.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 1 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_4ret_rep3.txt;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep3.nex
+
+sed -i 's/Tree gt5697=Tree gt5698=Tree gt5699=Tree gt5700=Tree gt5701=Tree gt5702=Tree gt5703=Tree gt5704=Tree gt5705=Tree gt5706=Tree gt5707=Tree gt5708=Tree gt5709=Tree gt5710=Tree gt5711=Tree gt5712=Tree gt5713=Tree gt5714=Tree gt5715=Tree gt5716=Tree gt5717=Tree gt5718=Tree gt5719=Tree gt5720=Tree gt5721=Tree gt5722=Tree gt5723=Tree gt5724=Tree gt5725=//g' script_4ret_rep3.nex
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_4ret_rep3.nex 
+
+
+
+
+### determine best model using AIC 
+AIC = 2k - 2*ln(L)
+
+(number of branches plus two times however many reticulation edges were estimated in that run)
+
+k = 10 + 2R
+
+AICc = 2k*(n/(n-K-1)) - 2*ln(L)
+
+Inferred Network #1:
+AIC = 2(10 + 2(2)) - 2*(-9296310.701326799)
+AIC = 2(14) - 2*(-9296310.701326799)
+AIC = 28 - (2 * -9296310.701326799)
+AIC = 18592649
+## lowest AIC
+
+AICc = 28*(n/(n-14-1)) - 2*(-9296310.701326799)
+
+Inferred Network #2:
+AIC = 2(10 + 2(4)) - 2*(-9318125.036817597)
+AIC = 2(18) - 2*(-9318125.036817597)
+AIC = 36 - 2*(-9318125.036817597)
+AIC = 18636286
+
+Inferred Network #3:
+AIC = 2(10 + 2(3)) - 2*(-9324465.522445604)
+AIC = 32 - 2*(-9324465.522445604)
+AIC = 18648963
+
+Inferred Network #4:
+AIC = 2(10 + 2(2)) - 2*(-9326740.94091351)
+AIC = 28 - 2*(-9326740.94091351)
+AIC = 18653510
+## highest AIC 
+
+Inferred Network #5:
+AIC = 2(10 + 2(2)) - 2*(-9331909.270012049)
+AIC = 28 - 2*(-9331909.270012049)
+AIC = 18663847
+
+
+
+# visualize in icytree 
+
+
+### STILL TO DO:
+### Identify regions with high missingness and eliminate them from the pipeline
+### Incorporate bedtools maskfasta 
+### Repeat phylonet for MABO_NABO and for BRBO_BFBO
+########################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### one reticulation
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_1ret.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_1ret.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/treehaplotypes.txt
+
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 1 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_1ret.tre;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_1ret.nex
+
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_1ret.nex > /data5/sulidae/revisions/phylonet/truespecies/phylonet_allspecies_1ret.txt 
+
+
+### two reticulations
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_2ret.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_2ret.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/treehaplotypes.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 1 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_2ret.tre;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_2ret.nex
+
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_2ret.nex > /data5/sulidae/revisions/phylonet/truespecies/phylonet_allspecies_2ret.txt 
+
+
+### three reticulations
+echo -e "#NEXUS\n\nBEGIN TREES;\n" > /data5/sulidae/revisions/phylonet/truespecies/script_3ret.nex
+
+TREECOUNT="0"
+while read -r haplotype; do
+
+  echo -n "Tree gt$TREECOUNT=" |   cat - /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/truespecies/script_3ret.nex
+
+  TREECOUNT=$(($TREECOUNT + 1))
+done < /data5/sulidae/revisions/treehaplotypes.txt
+
+
+echo -e "\n\nEND;\n\nBEGIN PHYLONET;\n\nInferNetwork_MPL (all) 1 -pl 12 -a <RFBO:RFBOPAL63,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106; BRBO:BRBO201,BRBO202,BRBO203,BRBO205; MABO:MABO301,MABO302,MABO304,MABO305,MABO306; NABO:NABO401,NABO402,NABO403,NABO404,NABO405,NABO406; BFBO:BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506; PEBO:PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606> -x 100 -di phylonet_allspecies_3ret.tre;\n\nEND;" >> /data5/sulidae/revisions/phylonet/truespecies/script_3ret.nex
+
+
+java -jar ~/programs/Phylonetv3_8_2.jar /data5/sulidae/revisions/phylonet/truespecies/script_3ret.nex > /data5/sulidae/revisions/phylonet/truespecies/phylonet_allspecies_3ret.txt 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### Phylonetwork stuff just in case i return to it
+
+#### Before I run phylonetworks, I need to estimate a species tree given a set of unrooted gene trees 
+https://github.com/smirarab/ASTRAL/blob/master/astral-tutorial.md
+
+java -jar ~/programs/Astral/astral.5.7.8.jar -i /data5/sulidae/revisions/phylonetwork_fastas/PEBO_BFBO_raxml_trees/BestTrees.tre -o /data5/sulidae/revisions/phylonetwork_fastas/PEBO_BFBO_raxml_trees/Astral_Species.tre
+
+#### oooo baby now we get to play around with phylonetworks!!!
+
+# https://crsl4.github.io/PhyloNetworks.jl/latest/man/inputdata/#Tutorial-data:-gene-trees
+
+# https://crsl4.github.io/PhyloNetworks.jl/latest/man/snaq_plot/#Getting-a-Network
+
+~/programs/julia-1.9.0/bin/julia
+
+# this is all just installation stuff
+using Pkg
+Pkg.add("PhyloNetworks")
+Pkg.update()
+using Pkg
+Pkg.add("PhyloPlots")
+
+using PhyloNetworks;
+
+
+# this tells you every variable in the phylonetworks package
+# varinfo(PhyloNetworks)
+
+
+# less("/data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/BestTrees.tre")
+# raxmltrees = joinpath("/data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/BestTrees.tre")
+raxmltrees = joinpath("/data5/sulidae/revisions/phylonetwork_fastas/PEBO_BFBO_raxml_trees/BestTrees.tre")
+
+# less(raxmltrees)
+genetrees = readMultiTopology(raxmltrees);
+# genetrees[3]
+
+q,t = countquartetsintrees(genetrees); # read in trees, calculate quartet CFs
+df = writeTableCF(q,t)   # data frame with observed CFs: gene frequencies
+
+
+using CSV
+
+# CSV.write("tableCF.csv", df); # to save the data frame to a file
+
+CSV.write("tableCF.PEBO_BFBO.csv", df); # to save the data frame to a file
+
+#r axmlCF = readTableCF("tableCF.csv") # read in the file and produces a "DataCF" object
+
+raxmlCF = readTableCF("tableCF.PEBO_BFBO.csv") # read in the file and produces a "DataCF" object
+
+
+astralfile = joinpath("/data5/sulidae/revisions/phylonetwork_fastas/PEBO_BFBO_raxml_trees/Astral_Species.tre");
+
+astraltree = readMultiTopology(astralfile)[1] # 102th tree: last tree here
+plot(astraltree, showedgelength=true);
+
+net0 = snaq!(astraltree,raxmlCF, hmax=0, filename="PEBO_BFBO.net0", seed=1234)
+
+net0 = snaq!(Astral_Species.tre,raxmlCF, hmax=0, filename="net0", seed=1234)
+
+using PhyloPlots
+plot(net0);
+
+net1 = snaq!(net0, raxmlCF, hmax=1, filename="net1", seed=2345)
+
+plot(net1, showgamma=true);
+
+
+net1 = snaq!(net0, raxmlCF, hmax=1, filename="net1", seed=2345)
+
+########################################################################
+
+
+######### saving a copy of sucessful code in case i mess it up
+
+
+ls -d /data5/sulidae/my_datasets/trimmedfiles/sorted_bam_files/*bam | awk 'BEGIN { FS = "/" } ; {print $7} ' | awk 'BEGIN { FS = "_" } ; {print $1, '\t', "/data5/sulidae/my_datasets/trimmedfiles/sorted_bam_files/", $0 '\t', "NEVG01000002.1"} ' | sed 's/files\/ /files\//g' | sed 's/RFBO /RFBO_PAL_63/g' > /data5/sulidae/reference_lists/bamlist.txt
+
+sed 's/NEVG01000002.1/replacethis/g' /data5/sulidae/reference_lists/bamlist.txt > /data5/sulidae/reference_lists/bamlist_reference.txt 
+
+
+# my vcf has renamed rfbo_pal_63 to rfbo101 so i have to change that back or rename all the bam files (yuck)
+# NOTE : the VCF file should contain SNPs from only one chromosome.
+
+
+
+zcat /data5/sulidae/revisions/split_vcf_parallel_may2/split.NEVG01000002.1.vcf.gz | sed 's/RFBO101/RFBOPAL63/g' > /data5/sulidae/revisions/split_vcf_parallel_may2/split.NEVG01000002.1.rfbooriginal.vcf
+
+bcftools view -s BFBO501,BFBO502,BFBO503,BFBO504,BFBO505,BFBO506,BRBO201,BRBO202,BRBO203,BRBO205,MABO301,MABO302,MABO304,MABO305,MABO306,NABO401,NABO402,NABO403,NABO404,NABO405,NABO406,PEBO601,PEBO602,PEBO603,PEBO604,PEBO605,PEBO606,RFBO102,RFBO103,RFBO104,RFBO105,RFBO106,RFBOPAL63 /data5/sulidae/revisions/split_vcf_parallel_may2/split.NEVG01000002.1.rfbooriginal.vcf > /data5/sulidae/revisions/split_vcf_parallel_may2/split.NEVG01000002.1.rfbooriginal.nobrbo204.vcf
+
+bgzip /data5/sulidae/revisions/split_vcf_parallel_may2/split.NEVG01000002.1.rfbooriginal.nobrbo204.vcf
+
+
+
+samtools view 
+~/programs/extractPIRs.v1.r68.x86_64/extractPIRs --bam /data5/sulidae/reference_lists/bamlist.txt \
+            --vcf /data5/sulidae/revisions/split_vcf_parallel_may2/split.NEVG01000002.1.rfbooriginal.nobrbo204.vcf.gz \
+            --out myPIRsList
+
+shapeit -assemble \
+        --input-vcf sequence.multiple.vcf.gz \
+        --input-pir myPIRsList \
+        -O myHaplotypeData
+
+~/programs/shapeit.v2.904.3.10.0-693.11.6.el7.x86_64/bin/shapeit -assemble \
+        --input-vcf /data5/sulidae/revisions/split_vcf_parallel_may2/split.NEVG01000002.1.rfbooriginal.nobrbo204.vcf.gz \
+        --input-pir /data5/sulidae/my_datasets/trimmedfiles/myPIRsList \
+        -O myHaplotypeData \
+        --force
+
+
+
+
+
+
+
+
+
+parallel -j 30 -a chromosomenames_5000min.txt 'C={}; bcftools consensus split_vcf_parallel_may2/split.${C}.vcf.gz -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -o split_vcf_parallel_may2/${C}.fa'
+
+
+while read -r line
+do 
+  bcftools consensus split_vcf_parallel_may2/split."$line".vcf.gz -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -o split_vcf_parallel_may2/"$line".fa
+
+  bgzip split_vcf_parallel_may2/"$line".fa
+done < chromosomenames_5000min.txt
+
+
+NEVG01000001.1
+
+
+
+
+
+cd /data5/sulidae/revisions/split_vcf_parallel_error
+
+bcftools index *
+
+#!/bin/bash
+
+bcftools consensus split.NEVG01000001.1.vcf.gz -f /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf.gz -o sula_flightless_filtered_biallelic.vcf.gz
+
+
+myfunc() {
+  line="$1"
+
+  bcftools view -O z -o split_vcf_parallel_apr27/split."$line".vcf.gz sula_flightless_filtered_biallelic.vcf.gz
+
+  bcftools consensus split_vcf_parallel_apr27/split.${line}.vcf.gz -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -o ${line}.fa 
+}
+export -f myfunc
+
+parallel myfunc
+
+NEVG01002597.1
+
+
+ parallel -j 12 -a chromosomenames_5000min.txt 'C={};  bcftools view -O z -r ${C} -o split_vcf_parallel_may2/split.${C}.vcf.gz sula_flightless_filtered_biallelic.vcf.gz; bcftools consensus split_vcf_parallel_may2/split.${C}.vcf.gz -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -o ${C}.fa; bgzip ${C}.fa'; rm split_vcf_parallel_may2/split.${C}.vcf.gz
+ 
+
+  
+  bcftools view -O z -o split_vcf_parallel_apr27/split."$line".vcf.gz sula_flightless_filtered_biallelic.vcf.gz
+
+  bcftools consensus split_vcf_parallel_apr27/split.${line}.vcf.gz -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -o ${line}.fa 
+done < chromosomenames_5000min.txt
+wait 
+
+N=4
+(
+for thing in a b c d e f g; do 
+   ((i=i%N)); ((i++==0)) && wait
+   task "$thing" & 
+done
+)
+## apr 26 2023 if this works, make a file of file names and run it in sequence with all of them using the file name + "_consensus.vcf.gz" as the output
+
+ls > filenames.txt
+
+sed -i 's/.vcf.gz//g' filenames.txt
+
+while read -r line
+do 
+  bcftools index "$line".vcf.gz 
+done < filenames.txt
+
+while read -r line
+do 
+  bcftools consensus "$line".vcf.gz -f /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf.gz -o fastas/"$line".fa
+done < filenames.txt
+
+sula_fl
+
+# https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html
+# sampleID # abs path to BAM # chromosome
+# NOTE : the VCF file should contain SNPs from only one chromosome.
+
+sed -i "s/\.vcf\.gz//g" $item;
+
+while read item; do
+  sed -i "s/\.vcf\.gz//g" "$item"
+  echo "$item";
+done < split_filenames.txt
+
+sed 's/\.vcf\.gz//g' split_filenames.txt > split_chromosomes.txt
+sed -i 's/split\.//g' split_chromosomes.txt
+  extractPIRs --bam bamlist \
+              --vcf sequence.multiple.vcf.gz \
+              --out myPIRsList
+
+ls -d "$PWD/"sorted_bam_files/*bam > split_bamlist.txt
+
+awk '{print $1}' split_bamlist.txt
+
+awk 'BEGIN { FS = "/" } ; {print $6}' split_bamlist.txt | awk 'BEGIN { FS = "_" } ; {print $1}' > individualnames.txt
+
+paste individualnames.txt split_bamlist.txt -d "\t" > PIR_bamlist.txt
+
+scp Downloads/extractPIRs.v1.r68.x86_64.tgz daja5529@chickadee.colorado.edu:/data5/sulidae/revisions/
+
+scp Downloads/shapeit.v2.r904.glibcv2.17.linux.tar.gz daja5529@chickadee.colorado.edu:/data5/sulidae/revisions/
+while read item; do
+  awk -v item="$item" 'BEGIN{ FS = OFS = "\t" } { print $0,item}' PIR_bamlist.txt > tempPIR.txt
+  ./extractPIRs --bam tempPIR.txt \
+              --vcf "split_vcf/split.${item}.vcf.gz" \
+              --out "myPIRs/myPIRsList.${item}.txt"
+
+done < split_chromosomes.txt
+
+head split_chromosomes.txt > temp.txt
+
+
+/data5/sulidae/revisions/shapeit.v2.904.3.10.0-693.11.6.el7.x86_64/bin/shapeit -assemble \
+      --input-vcf split_vcf/split.NEVG01000001.1.vcf.gz \
+      --input-pir myPIRs/myPIRsList.NEVG01000001.1.txt \
+      -O myHaplotypeData.test.txt
+
+
+while read item; do
+  awk -v item="$item" 'BEGIN{ FS = OFS = "\t" } { print $0,item}' PIR_bamlist.txt > tempPIR.txt
+
+  /data5/sulidae/revisions/shapeit.v2.904.3.10.0-693.11.6.el7.x86_64/bin/shapeit -assemble \
+        --input-vcf "split_vcf/split.${item}.vcf.gz" \
+        --input-pir "myPIRs/myPIRsList.${item}.txt" \
+        -O "myHaplotypeData.${item}.txt"
+
+done < split_chromosomes.txt
+
+
+while read item; do
+  echo "$item"
+  zcat $item | wc -l >> linecounts.txt
+done < filenames.txt
+
+
+
+
+
+
+### making a species tree in raxml using just the split up data
+
+/data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test
+
+
+while read -r haplotype; do
+
+  cat /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".fa | tr "\t" "\n" |  fold -w 60 > /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".folded.fa
+
+  mkdir /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/
+
+  raxmlHPC -s /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".folded.fa -m GTRCAT -p 12345 -n test -w /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/
+
+  cat /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/raxml_trees_masked/BestTrees.tre
+
+done < /data5/sulidae/revisions/fastas_for_tree.txt
+
+#### Before I run phylonetworks, I need to estimate a species tree given a set of unrooted gene trees 
+https://github.com/smirarab/ASTRAL/blob/master/astral-tutorial.md
+
+java -jar ~/programs/Astral/astral.5.7.8.jar -i /data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/BestTrees.tre -o /data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/Astral_Species.tre
+
+
+
+
+cat /data5/sulidae/revisions/phylonet/5000kb_masked/*.folded.fa >> goodchroms.25.fa
+
+rm fastafilenames.txt
+
+ls /data5/sulidae/revisions/phylonet/5000kb_masked/*.folded.fa >> fastafilenames.txt
+
+sed -i 's/.folded.fa//g' fastafilenames.txt
+
+sed -i 's/\/data5\/sulidae\/revisions\/phylonet\/5000kb\_masked\///g' fastafilenames.txt
+
+tr --delete '\n' < goodchroms.25.fa > temp.fa
+tr '>' '\n>' < temp.fa > goodchroms.25.nolinebreaks.fa
+
+sed -i -e 's/ //g' goodchroms.25.nolinebreaks.fa
+
+sed -i 's/01/01 /g' goodchroms.25.nolinebreaks.fa
+sed -i 's/02/02 /g' goodchroms.25.nolinebreaks.fa
+sed -i 's/03/03 /g' goodchroms.25.nolinebreaks.fa
+sed -i 's/04/04 /g' goodchroms.25.nolinebreaks.fa
+sed -i 's/05/05 /g' goodchroms.25.nolinebreaks.fa
+sed -i 's/06/06 /g' goodchroms.25.nolinebreaks.fa
+
+sed -i 's/63/63 /g' goodchroms.25.nolinebreaks.fa 
+
+sort goodchroms.25.nolinebreaks.fa > goodchroms.25.nolinebreaks.sorted.fa
+
+awk '{print $1}' goodchroms.25.nolinebreaks.sorted.fa | sort -u > unique.txt
+
+sed -i '1d' unique.txt
+
+rm goodchroms.25.sorted.sequential.fa
+
+
+while read -r file; do
+    echo "${file}" >> goodchroms.25.sorted.sequential.fa
+    grep "${file}" goodchroms.25.nolinebreaks.sorted.fa | awk '{print $2}' >> goodchroms.25.sorted.sequential.fa
+done < unique.txt
+
+tr --delete '\n' < goodchroms.25.sorted.sequential.fa > temp.fa
+
+sed -e 's/BF/\n>BF/g' temp.fa > goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i -e 's/PE/\n>PE/g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i -e 's/MA/\n>MA/g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i -e 's/NABO/\n>NABO/g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i -e 's/RF/\n>RF/g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i -e 's/BR/\n>BR/g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+
+sed -i -e 's/[ \t]//g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i -e 's/ //g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i 's/01/01 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+sed -i 's/02/02 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+sed -i 's/03/03 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+sed -i 's/04/04 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+sed -i 's/05/05 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+sed -i 's/06/06 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i 's/63/63 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+awk '{print $1}' goodchroms.25.sorted.sequential.nolinebreaks.fa  | wc -l
+
+awk '{print $2}' goodchroms.25.sorted.sequential.nolinebreaks.fa  | wc -l
+
+
+sed -i '1d' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+awk '{print $1}' goodchroms.25.sorted.sequential.nolinebreaks.fa | awk '{ print length }'
+awk '{print $2}' goodchroms.25.sorted.sequential.nolinebreaks.fa | awk '{ print length }'
+
+awk '{print $2}' goodchroms.25.nolinebreaks.fa | awk '{ print length }' | sort -u
+
+awk '{print $2}' goodchroms.25.sorted.fa | awk '{ print length }' | grep '5' | wc -l
+VARCOUNT_B=$"0"
+
+
+while read -r file; do
+  
+    if [[ $(cat /data5/sulidae/revisions/phylonet/5000kb_masked/$file.folded.fa | wc -l) -ge 50 ]]
+    then 
+        echo "$file" >> goodchromswithdata.txt
+    fi
+
+done < /data5/sulidae/revisions/raxml/fastafilenames.txt
+
+
+
+VARCOUNT_B=$"0"
+while read -r file; do
+    echo "DNA, $file = $((VARCOUNT_B + 1)) - $((VARCOUNT_B + 5000))" >> partition.txt
+    VARCOUNT_B=$(($VARCOUNT_B + 5000))
+done < /data5/sulidae/revisions/raxml/goodchromswithdata.txt
+
+tr ' ' '\n' < goodchroms.25.sorted.sequential.nolinebreaks.fa > forraxml.fa
+
+
+screen -r 2378761
+raxmlHPC -s forraxml.fa -m GTRCAT -q partition.txt -p 12345 -n test -w /data5/sulidae/revisions/raxml/output/
+
+  cat /data5/sulidae/revisions/phylonet/raxml_trees/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/raxml_trees/BestTrees.tre
+
+
+# PSMC
+samtools mpileup -C50 -uf ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna /data5/sulidae/my_datasets/trimmedfiles/sorted_bam_files/BFBO501_sorted_RGadded_dupmarked.bam | bcftools call -mv -Oz -o calls.vcf.gz
+| bcftools consensus | gzip > /data5/sulidae/revisions/psmc_analyses/fastas/BFBO501.diploid.fq.gz
+
+
+bcftools call
+/usr/bin/bcftools mpileup -Ou -f "$ref" -a FORMAT/AD,DP,INFO/AD,SP "$bamdir"*_sorted_RGadded_dupmarked.bam | /usr/bin/bcftools call -mv -V indels > "$ID"_snps_multiallelic.vcf
+
+
+/usr/bin/bcftools mpileup -Ou -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna /data5/sulidae/my_datasets/trimmedfiles/sorted_bam_files/BFBO501_sorted_RGadded_dupmarked.bam | /usr/bin/bcftools call -mv -V indels > /data5/sulidae/revisions/psmc_analyses/vcfs/BFBO501.vcf
+
+/usr/bin/bcftools consensus /data5/sulidae/revisions/psmc_analyses/vcfs/BFBO501.vcf | gzip > /data5/sulidae/revisions/psmc_analyses/fastas/BFBO501.diploid.fq.gz
+
+bcftools index BFBO501.vcf.gz 
+
+
+/usr/bin/bcftools consensus /data5/sulidae/revisions/psmc_analyses/vcfs/BFBO501.vcf.gz -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna > /data5/sulidae/revisions/psmc_analyses/fastas/BFBO501.diploid.fa
+
+
+
+## parallelized
+
+ls /data5/sulidae/my_datasets/trimmedfiles/sorted_bam_files/*bam > bamfiles.txt
+
+sed -i 's/\/data5\/sulidae\/my_datasets\/trimmedfiles\/sorted\_bam\_files\///g' bamfiles.txt
+
+sed -i 's/\_sorted\_RGadded\_dupmarked\.bam//g' bamfiles.txt
+
+parallel -j 34 -a bamfiles.txt 'C={}; /usr/bin/bcftools mpileup -Ou -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna /data5/sulidae/my_datasets/trimmedfiles/sorted_bam_files/${C}_sorted_RGadded_dupmarked.bam | /usr/bin/bcftools call -mv -V indels > /data5/sulidae/revisions/psmc_analyses/vcfs_parallel/${C}.vcf'
+
+parallel -j 34 -a bamfiles.txt 'C={}; gunzip /data5/sulidae/revisions/psmc_analyses/vcfs_parallel/${C}.vcf.gz'
+
+parallel -j 34 -a bamfiles.txt 'C={}; bgzip /data5/sulidae/revisions/psmc_analyses/vcfs_parallel/${C}.vcf'
+
+parallel -j 34 -a bamfiles.txt 'C={}; bcftools index /data5/sulidae/revisions/psmc_analyses/vcfs_parallel/${C}.vcf.gz'
+
+
+
+parallel -j 34 -a bamfiles.txt 'C={}; /usr/bin/bcftools consensus /data5/sulidae/revisions/psmc_analyses/vcfs/{C}.vcf | gzip > /data5/sulidae/revisions/psmc_analyses/fastas_parallel/{C}.diploid.fq.gz'
+
+
+
+
+/usr/bin/bcftools consensus /data5/sulidae/revisions/psmc_analyses/vcfs/BFBO501.vcf.gz -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna > /data5/sulidae/revisions/psmc_analyses/fastas/BFBO501.diploid.fa
+
+
+BFBO501.diploid.fq.gz
+~/programs/psmc/utils/fq2psmcfa -q0 BFBO501.diploid.fa.gz > BFBO501.diploid.0.psmcfa
+
+~/programs/psmc/psmc -N25 -t15 -r5 -p "4+25*2+4+6" -o BFBO501.diploid.0.psmc BFBO501.diploid.0.psmcfa
+
+~/programs/psmc/utils/psmc2history.pl BFBO501.diploid.0.psmc | ~/programs/psmc/utils/history2ms.pl > ms-cmd.sh
+
+~/programs/psmc/utils/psmc_plot.pl BFBO501.diploid BFBO501.diploid.psmc
+
+
+## trying again, previous script hit an error
+## using this github https://github.com/jacahill/hPSMC
+## which uses scripts from this github https://github.com/Paleogenomics/Chrom-Compare
+chromosomenames_5000min.txt
+
+samtools mpileup -s -f REF\_GENOME -q30 -Q60 -r CHROMOSOME BAMFILE.bam | \
+pu2fa -c CHROMOSOME -C MAX\_COVERAGE > haploidized_fasta.fa
+
+
+while read -r chrom
+do 
+samtools mpileup -s -f  ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna  -q30 -Q60 -r $chrom /data5/sulidae/my_datasets/trimmedfiles/sorted_bam_files/BFBO501_sorted_RGadded_dupmarked.bam | \
+~/programs/Chrom-Compare/pu2fa -c $chrom -C 800 > test.haploidized_fasta_"$chrom".fa
+done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+
+cat test.haploidized_fasta*.fa > test.haploidized_fasta_all.fa
+
+# i had to indent several lines following the 114 line that causes an error. it's right above the ## BODY line.
+python /data5/sulidae/revisions/psmc_analyses/hPSMC/psmcfa_from_2_fastas.py -b10 -m5 /data5/sulidae/revisions/psmc_analyses/parallelized_pu2fa_all/BFBO501.haploidized_fasta_all.fa /data5/sulidae/revisions/psmc_analyses/parallelized_pu2fa_all/PEBO601.haploidized_fasta_all.fa > hPSMC.psmcfa
+
+~/programs/psmc/psmc -N25 -t15 -r2 -p "4+25*2+4+6" -o BFBO501.haploidized_fasta_all.psmc /data5/sulidae/revisions/psmc_analyses/parallelized_pu2fa_all/BFBO501.haploidized_fasta_all.fa
+
+~/programs/psmc/utils/psmc2history.pl test.haploidized_fasta_all.psmc | ~/programs/psmc/utils/history2ms.pl > ms-cmd.sh
+
+~/programs/psmc/utils/psmc_plot.pl BFBO501.diploid BFBO501.diploid.psmc
+
+~/programs/psmc/utils/psmc_plot.pl test test.haploidized_fasta_all.psmc
+
+python hPSMC/PSMC_emit_last_iteration_coord.py -s10 -g25 -m0.000000001 hPSMC.psmcfa
+
+
+cp fastas/BFBO501.diploid.psmcfa test_forsed.psmcfa
+
+cat test_forsed.psmcfa | tr -d '\n' > test.out.fa
+
+sed -e 's/\.1/\.1\n/g' test.out.fa > test.out.fa.2
+
+sed -e 's/>/\n>/g' test.out.fa.2 > test.out.fa.psmc
+
+~/programs/psmc/psmc -N25 -t15 -r5 -p "4+25*2+4+6" -o test.haploidized_fasta_all.psmc test.out.fa.psmc
+
+
+> test.out.psmcfa
+
+# the above is working
+
+function makechromosomefastas_func {
+  B=$1
+  while read -r chrom; do 
+      samtools mpileup -s -f  ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna  -q30 -Q60 -r $chrom /data5/sulidae/my_datasets/trimmedfiles/sorted_bam_files/"$B"_sorted_RGadded_dupmarked.bam | \
+      ~/programs/Chrom-Compare/pu2fa -c $chrom -C 800 > "$B".haploidized_fasta_"$chrom".fa
+  done < /data5/sulidae/revisions/chromosomenames_5000min.txt
+}
+
+export -f makechromosomefastas_func
+
+parallel -j 34 -a /data5/sulidae/revisions/psmc_analyses/bamfiles.txt 'B=(); makechromosomefastas_func'
+
+while read -r bird; do 
+  cat parallelized_pu2fa/"$bird".haploidized_fasta_*.fa > /data5/sulidae/revisions/psmc_analyses/parallelized_pu2fa_all/"$bird".haploidized_fasta_all.fa
+
+done < /data5/sulidae/revisions/psmc_analyses/bamfiles.txt
+
+rm /data5/sulidae/revisions/psmc_analyses/parallelized_pu2fa/*
+
+parallelized_pu2fa_all
+
+
+
+
+
+
+
+
+# okay fuck psmc, trying msmc
+~/programs/msmc-tools
+/data5/sulidae/revisions/msmc_analyses/
+https://github.com/stschiff/msmc-tools/blob/master/msmc-tutorial/guide.md
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### tried to make a RAxML tree using gene trees, it sucks
+/data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test
+
+
+while read -r haplotype; do
+
+  cat /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".fa | tr "\t" "\n" |  fold -w 60 > /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".folded.fa
+
+  mkdir /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/
+
+  raxmlHPC -s /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".folded.fa -m GTRCAT -p 12345 -n test -w /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/
+
+  cat /data5/sulidae/revisions/phylonet/raxml_trees_masked/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/raxml_trees_masked/BestTrees.tre
+
+done < /data5/sulidae/revisions/fastas_for_tree.txt
+
+#### Before I run phylonetworks, I need to estimate a species tree given a set of unrooted gene trees 
+https://github.com/smirarab/ASTRAL/blob/master/astral-tutorial.md
+
+java -jar ~/programs/Astral/astral.5.7.8.jar -i /data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/BestTrees.tre -o /data5/sulidae/revisions/phylonetwork_fastas/raxml_trees/Astral_Species.tre
+
+
+
+
+cat /data5/sulidae/revisions/phylonet/5000kb_masked/*.folded.fa >> goodchroms.25.fa
+
+ls /data5/sulidae/revisions/phylonet/5000kb_masked/*.folded.fa >> fastafilenames.txt
+
+sed -i 's/.folded.fa//g' fastafilenames.txt
+
+sed -i 's/\/data5\/sulidae\/revisions\/phylonet\/5000kb\_masked\///g' fastafilenames.txt
+
+
+sort goodchroms.25.fa > goodchroms.25.sorted.fa
+
+awk '{print $1}' goodchroms.25.sorted.fa | sort -u > unique.txt
+
+sed -i '1d' unique.txt
+
+rm goodchroms.25.sorted.sequential.fa
+
+while read -r file; do
+    echo "${file}" >> goodchroms.25.sorted.sequential.fa
+    grep "${file}" goodchroms.25.sorted.fa | awk '{print $2}' >> goodchroms.25.sorted.sequential.fa
+done < unique.txt
+
+tr --delete '\n' < goodchroms.25.sorted.sequential.fa > temp.fa
+
+tr '>' '\n>' < temp.fa > goodchroms.25.sorted.sequential.nolinebreaks.fa
+
+tr --delete '\t' < goodchroms.25.sorted.sequential.nolinebreaks.fa >outfile.txt
+
+sed -i -e 's/[ \t]//g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i -e 's/ //g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i 's/01/01 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+sed -i 's/02/02 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+sed -i 's/03/03 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+sed -i 's/04/04 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+sed -i 's/05/05 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+sed -i 's/06/06 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i 's/63/63 /g' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+sed -i '1d' goodchroms.25.sorted.sequential.nolinebreaks.fa 
+
+awk '{print $1}' goodchroms.25.sorted.sequential.nolinebreaks.fa | awk '{ print length }'
+awk '{print $2}' goodchroms.25.sorted.sequential.nolinebreaks.fa | awk '{ print length }'
+
+58820000
+59105000
+59110000
+awk '{print $2}' goodchroms.25.sorted.fa | awk '{ print length }' | grep '5' | wc -l
+VARCOUNT_B=$"0"
+
+388212
+
+
+while read -r file; do
+  
+    if [[ $(cat /data5/sulidae/revisions/phylonet/5000kb_masked/$file.fa | wc -l) -ge 1 ]]
+    then 
+        echo "$file" >> goodchromswithdata.txt
+    fi
+
+done < /data5/sulidae/revisions/raxml/fastafilenames.txt
+
+VARCOUNT_B=$"0"
+while read -r file; do
+    echo "DNA, $file = $((VARCOUNT_B + 1)) - $((VARCOUNT_B + 5000))" >> partition.txt
+    VARCOUNT_B=$(($VARCOUNT_B + 5000))
+done < /data5/sulidae/revisions/raxml/goodchromswithdata.txt
+
+awk '{print $2}' temp.fa  | awk '{ print length }'
+
+# length in fasta       58820000
+# length in partition   59110000
+
+# this is the source of the fasta
+#  cat /data5/sulidae/revisions/phylonet/5000kb_masked/"$haplotype".folded.fa >> goodchroms.25.fa
+
+# this is the source of the partition
+while read -r file; do
+  
+    if [[ $(cat /data5/sulidae/revisions/phylonet/5000kb_masked/$file.fa | wc -l) -ge 1 ]]
+    then 
+        echo "$file" >> goodchromswithdata.txt
+    fi
+
+done < /data5/sulidae/revisions/raxml/fastafilenames.txt
+
+
+while read -r file; do
+
+   sed "/^>/ s/$/ \| ${file}/" /data5/sulidae/revisions/phylonet/5000kb_masked/${file}.fa >> goodchroms.25.fa
+
+done < /data5/sulidae/revisions/raxml/fastafilenames.txt
+
+screen -r 2378761
+raxmlHPC -s goodchroms.25.fa -m GTRCAT -p 12345 -n test -w /data5/sulidae/revisions/raxml/output/
+
+  cat /data5/sulidae/revisions/phylonet/raxml_trees/"$haplotype"/RAxML_bestTree.test >> /data5/sulidae/revisions/phylonet/raxml_trees/BestTrees.tre

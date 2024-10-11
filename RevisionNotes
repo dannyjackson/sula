@@ -1,0 +1,144 @@
+# use ANGSD -doFasta to create fasta from VCF
+
+
+# install ANGSD
+
+Installation:
+=====
+1) Using a local folder containing htslib
+```
+#download htslib
+git clone --recurse-submodules https://github.com/samtools/htslib.git;
+#download angsd
+git clone https://github.com/angsd/angsd.git;
+
+#install htslib
+cd htslib
+make
+
+#install angsd
+cd ../angsd
+make HTSSRC=../htslib
+```
+
+2) Systemwide installation of htslib
+
+```
+git clone https://github.com/angsd/angsd.git;
+cd angsd; make HTSSRC=systemwide
+```
+
+3) Using htslib submodule
+
+```
+git clone https://github.com/angsd/angsd.git;
+cd angsd; make
+```
+
+
+
+~/programs/whole_genome_bioinformatics/align-and-sort.sh -i /data5/sulidae/reference_lists/sulafilenames.txt -r ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -t 12 -p ~/my_datasets/trimmedseq/ -b bam_files_flightless -s sorted_bam_files_flightless
+
+
+ls sorted_bam_files/ > file_list.txt
+grep '.bam' file_list.txt | grep -v 'bai' > file_list_2.txt
+mv file_list_2.txt file_list.txt
+
+# don't use this
+~/programs/whole_genome_bioinformatics/angsd/angsd -doFasta 3 -i sorted_bam_files/BFBO501_sorted_RGadded_dupmarked.bam -out angsd_output/BFBO501_sorted_RGadded_dupmarked
+
+# don't use this -- it makes a single fasta for each individual
+while read line; do
+  echo "$line"
+  ~/programs/whole_genome_bioinformatics/angsd/angsd -doFasta 3 -i sorted_bam_files/"$line" -out angsd_output/"$line"
+done <file_list.txt
+
+
+
+# perl FASconCAT-G_v1.05.1.pl -s -f -o
+
+./mumu.pl '*.fa' >all.mfa
+
+sed -i 's/.1>/.1 | /g' all.mfa
+
+mv RFBO_101_sorted_RGadded_dupmarked.bam.fa RFBO101_sorted_RGadded_dupmarked.bam.fa
+ls *.fa > filenames.txt
+sed -i 's/_sorted_RGadded_dupmarked.bam.fa//g' filenames.txt
+
+while read p; do
+sed -i "/^>/ s/$/ | ${p}/" ${p}_sorted_RGadded_dupmarked.bam.fa
+done <filenames.txt
+
+# cat *.fa > combined.fa # didn't work -- doesnt' retain individual assignment of genetic sequence
+
+export PYTHONPATH=${PYTHONPATH}:${HOME}/.local/lib/python3.8/site-packages
+
+tabix -p vcf sula_flightless_filtered.recode.vcf.gz
+
+python3 vcf2msa.py/vcf2msa.py -v /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf.gz -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -g ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1Pharrisi_all_exo_V2.gff3
+
+grep '>' ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna > regions.txt
+sed -i 's/>//g' regions.txt
+awk '{print$1}' regions.txt > regions_edited.txt
+mv regions_edited.txt regions.txt
+
+python3 vcf2msa.py/vcf2msa.py -v /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf.gz -f ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna -R regions.txt
+
+mv RFBO_PAL_63_sorted_RGadded_dupmarked.bam.fa RFBO106_sorted_RGadded_dupmarked.bam.fa
+
+for i in *.fa; do fname=$(basename ${i} .fa); perl -pe "s/^>./>${fname}_N/g" ${fname}.fa > reID_${fname}.fa; done
+
+for i in reID*.fa; do fname=$(basename ${i} .fa); perl -pe "s/_sorted_RGadded_dupmarked.bam//g" ${fname}.fa > shortID_${fname}.fa; done
+
+cat shortID*fa > combined.fa
+
+sed -i 's/\.1//g' combined.fa
+
+
+# cat ~/reference_datasets/flightless/ncbi-genomes-2020-08-14/GCA_002173475.1_Pharrisi_ref_V1/GCA_002173475.1_Pharrisi_ref_V1_genomic.fna | vcf-consensus /data5/sulidae/my_datasets/sula_flightless_filtered.recode.vcf.gz > /data5/sulidae/my_datasets/sula.fa
+
+
+# input to Tree Incongruence Checking in R (TICR) pipeline precursor to the SNaQ analysis. github.com/nstenz/TICR
+
+gunzip /data5/sulidae/revisions/angsd_output/summary/allindividuals.fa.gz
+
+nohup ~/programs/TICR/scripts/mdl.pl /data5/sulidae/revisions/angsd_output/combined.fa -b 100 -f 5000 &
+
+
+
+~/programs/TICR/scripts/mb.pl mdl-1669489291/allindividuals.tar.gz -m mb-block.txt -o sula-mb
+
+~/programs/TICR/scripts/bucky.pl sula-mb/allindividuals.tar.gz -o allindividuals-bucky
+
+
+# I am here. Bucky is running into an error, and on google groups the script developer said it's better to run it on slurm.
+
+scp -r daja5529@chickadee.colorado.edu:/data5/sulidae/revisions/sula-mb .
+scp -r sula-mb dnjacks4@agave.asu.edu:/home/dnjacks4/
+
+for X in *.t; do mbsum -n 1000 $X; done
+
+~/programs/TICR/scripts/mb.pl mdl-1669489291/allindividuals.tar.gz -m mb-block.txt -o sula-mb
+
+
+
+
+
+~/programs/TICR/scripts/bucky.pl sula-mb/allindividuals.mb.tar -o allindividuals-bucky
+
+
+# running on Sol
+./bucky-slurm.pl ~/sula-mb/allindividuals.mb.tar -o allindividuals-bucky
+
+#test
+perl bucky-slurm.pl ~/sula-mb/ -q 1
+
+perl bucky-slurm.pl ~/sula-mb/ -a alpha -n num-gen -q quartet-index -o output
+
+
+## Redoing it all on the ASU server with slurm
+scp daja5529@chickadee.colorado.edu:/data5/sulidae/revisions/angsd_output/summary/allindividuals.fa.gz .
+
+scp allindividuals.fa.gz dnjacks4@agave.asu.edu:/home/dnjacks4/
+
+scp dnjacks4@agave.asu.edu:/home/dnjacks4/Rplots.pdf .
